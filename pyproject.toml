@@ -1,0 +1,15 @@
+[tool.poetry]
+name = "oz-collabo-006-be"
+version = "0.1.0"
+description = ""
+authors = ["bamjun <khy5116@naver.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+Django = "^5.0.4"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
