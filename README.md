@@ -6,4 +6,3 @@
 
 - poetry 설치하기  
   - hello2
-test
