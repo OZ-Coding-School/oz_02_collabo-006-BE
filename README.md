@@ -5,4 +5,4 @@
 ### 프로젝트 처음시작 설정  
 
 - poetry 설치하기  
-  - hello
+  - hello2
