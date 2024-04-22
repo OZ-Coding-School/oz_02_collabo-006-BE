@@ -6,6 +6,4 @@
 
 - poetry 설치하기  
   - hello2
-  
-
-  -범준 태스트
+test
