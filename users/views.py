@@ -21,8 +21,7 @@ class UserView(APIView):
         return Response(serializer.data)
     
 
-
-
+# post 유저생성
 class Users(APIView):
     def post(self, request):
         serializer = UserSerializer(data=request.data)
