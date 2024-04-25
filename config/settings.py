@@ -43,6 +43,10 @@ DJANGO_SYSTEM_APPS = [
 CUSTOM_USER_APPS = [
     'users.apps.UsersConfig',
     'common.apps.CommonConfig',
+    'posts.apps.PostsConfig',
+    'medias.apps.MediasConfig',
+    'comments.apps.CommentsConfig',
+    'hashtags.apps.HashtagsConfig',
     'rest_framework',
     'rest_framework.authtoken',
 ]
@@ -142,6 +146,3 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.TokenAuthentication',
     ),
 }
-
-
-

@@ -31,7 +31,9 @@
   python manage.py createsuperuser
   ```
 
+TO DO LIST
 
+포스트에 미디어 추가하는 방법 논의해보기
 
 
 
