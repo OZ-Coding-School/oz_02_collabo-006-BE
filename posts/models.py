@@ -6,7 +6,7 @@ from hashtags.models import Hashtag
 
 class Post(CommonModel):
     content = models.TextField(blank=True)
-    comment_ck = models.BooleanField(default=True)
+    comment_ck = models.BooleanField()
     visible = models.BooleanField(default=True)
     likes = models.IntegerField(default=0)
 

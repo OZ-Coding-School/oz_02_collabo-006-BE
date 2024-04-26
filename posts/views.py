@@ -40,11 +40,12 @@ class PostList(APIView):
                 }
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
+# 특정 유저의 게시물 리스트 조회
+
+        
 # 게시글 생성
 class PostCreate(APIView):
     # permission_classes = [IsAuthenticated]
-
-    from hashtags.views import HashtagCreate
 
     def post(self, request):
         user_data = request.data
@@ -78,6 +79,7 @@ class PostCreate(APIView):
             }, status=status.HTTP_400_BAD_REQUEST)
         
         except Exception as e:
+            print(e)
             return Response({
                 "error": {
                     "code": 500,
@@ -86,13 +88,14 @@ class PostCreate(APIView):
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 # 특정 게시글 조회
+# 로그인한 사람만 게시글 조회 가능하게 하기
 class PostDetail(APIView):
     # permission_classes = [IsAuthenticated]
 
     def get(self, request, post_id):
         try:
-            post = Post.objects.get(pk=post_id)
-            serializer = PostDetailSerializer(post)
+            post_obj = Post.objects.get(pk=post_id)
+            serializer = PostDetailSerializer(post_obj)
             return Response({
                 "success": True,
                 "code": 200,
