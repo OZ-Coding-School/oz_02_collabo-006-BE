@@ -44,6 +44,8 @@ class PostList(APIView):
 class PostCreate(APIView):
     # permission_classes = [IsAuthenticated]
 
+    from hashtags.views import HashtagCreate
+
     def post(self, request):
         user_data = request.data
         serializer = PostSerializer(data=user_data)
