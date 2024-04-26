@@ -1,5 +1,7 @@
 from rest_framework.serializers import ModelSerializer
 from users.models import User
+from rest_framework import serializers
+from django.contrib.auth import authenticate
 
 # (1) 전체 데이터를 다 보여주는 Serialize
 class UserSerializer(ModelSerializer):
@@ -11,8 +13,80 @@ class UserSerializer(ModelSerializer):
         # depth = 1 이라는 코드를 통해 User 객체도 직렬화하겠다는 뜻.
         depth = 1 # objects도 serialize화 시킴
 
+    def validate_email(self, value):
+        if User.objects.filter(email=value).exists():
+            raise serializers.ValidationError("이메일이 이미 사용 중입니다.")
+        return value
 
-class MyInfoUserSerializer(ModelSerializer):
+    def validate_phone(self, value):
+        if User.objects.filter(phone=value).exists():
+            raise serializers.ValidationError("휴대폰 번호가 이미 사용 중입니다.")
+        return value
+
+    def validate_referrer(self, value):
+        if value and not User.objects.filter(username=value).exists():
+            raise serializers.ValidationError("유효하지 않은 추천인입니다.")
+        return value
+
+    # def validate(self, data):
+    #     # Additional custom validation can be added here if needed
+    #     return data
+
+
+
+
+
+class UserUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = "__all__" # Model의 전체 field 가져옴
+        fields = ['username', 'phone', 'email', 'subscription', 'status', 'profile_image']
+
+    def update(self, instance, validated_data):
+        instance.username = validated_data.get('username', instance.username)
+        instance.phone = validated_data.get('phone', instance.phone)
+        instance.email = validated_data.get('email', instance.email)
+        instance.subscription = validated_data.get('subscription', instance.subscription)
+        instance.status = validated_data.get('status', instance.status)
+        instance.profile_image = validated_data.get('profile_image', instance.profile_image)
+        if 'password' in validated_data:
+            instance.set_password(validated_data['password'])
+        instance.save()
+        return instance
+
+
+class UserLoginSerializer(serializers.Serializer):
+    username = serializers.CharField(max_length=255)
+    password = serializers.CharField(style={'input_type': 'password'}, write_only=True)
+
+    def validate(self, data):
+        username = data.get('username')
+        password = data.get('password')
+        user = authenticate(username=username, password=password)
+
+        if user is None:
+            raise serializers.ValidationError("잘못된 사용자명 또는 비밀번호.")
+
+        if not user.is_active:
+            raise serializers.ValidationError("계정 비활성화.")
+
+        data['user'] = user
+        return data
+
+
+
+
+# serializers.py
+
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework_simplejwt.views import TokenObtainPairView
+
+class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
+    def validate(self, attrs):
+        data = super().validate(attrs)
+        # Add custom claims
+        data['username'] = self.user.username
+        data['is_staff'] = self.user.is_staff
+        return data
+
+class MyTokenObtainPairView(TokenObtainPairView):
+    serializer_class = MyTokenObtainPairSerializer
