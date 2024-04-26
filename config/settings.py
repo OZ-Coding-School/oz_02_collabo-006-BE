@@ -32,6 +32,10 @@ DJANGO_SYSTEM_APPS = [
 CUSTOM_USER_APPS = [
     'users.apps.UsersConfig',
     'common.apps.CommonConfig',
+    'posts.apps.PostsConfig',
+    'medias.apps.MediasConfig',
+    'comments.apps.CommentsConfig',
+    'hashtags.apps.HashtagsConfig',
     'rest_framework',
     'rest_framework.authtoken',
     'rest_framework_simplejwt',
@@ -139,7 +143,6 @@ REST_FRAMEWORK = {
 
 
 
-
 SIMPLE_JWT = {
 		# 액세스 토큰의 유효 기간을 5분으로 설정합니다.
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5),
@@ -175,6 +178,4 @@ SIMPLE_JWT = {
     # 사용할 토큰 클래스로 AccessToken을 사용합니다.
     'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),  
 }
-
-
 
