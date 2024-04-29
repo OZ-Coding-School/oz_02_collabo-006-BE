@@ -100,6 +100,12 @@
 
 <br>
 
+# 범준
+- 프론트엔드에서 테스트를 하기위한 도커 파일 만드는중..  
+  -  python manage.py create_my_superuser
+  -  app폴더내에 다음경로를 만들어서 파일을 만들면 별도로 명령어 생성가능. management/commnads/[somefilename.py]
+     -  도커 생성할때 어드민 유저자동생성 `id` admin `비번` 1234
+
 # 주휘 add
 - 포스트에 미디어 추가하는 방법 논의해보기
   - 미디어와 포스트 다대다 관계인지 일대일인지.. ??? (확인하기)
