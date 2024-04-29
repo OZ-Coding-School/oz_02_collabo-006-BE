@@ -34,3 +34,6 @@ RUN chmod +x /app/entrypoint.sh
 
 # entrypoint 설정
 ENTRYPOINT ["/app/entrypoint.sh"]
+
+
+
