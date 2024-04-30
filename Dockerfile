@@ -6,6 +6,7 @@ ENV PYTHONUNBUFFERED=1
 
 
 RUN mkdir -p /path/to/django/logs/
+RUN sudo mkdir -p /var/log/nginx
 
 
 
