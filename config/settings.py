@@ -80,16 +80,27 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'db',
-        'USER': 'admin',
-        'PASSWORD': 'admin',
-        'HOST': 'db',
-        'PORT': '5432',  # 5432는 PostgreSQL의 기본포트이다
+
+# 서버에 올렸을때와 로컬완경에서 개발할때의 db 선택
+if os.name == 'posix':
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': 'db',
+            'USER': 'admin',
+            'PASSWORD': 'admin',
+            'HOST': 'db',
+            'PORT': '5432',  # 5432는 PostgreSQL의 기본포트이다
+        }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
+
 
 AUTH_USER_MODEL = "users.User"
 
