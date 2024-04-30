@@ -34,6 +34,8 @@ services:
   db:
     image: postgres:12.2
     container_name: ps01
+    ports:
+      - "5432:5432"
     environment:
       POSTGRES_DB: db
       POSTGRES_USER: admin
