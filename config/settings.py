@@ -1,10 +1,13 @@
 from datetime import timedelta
 from pathlib import Path
+import os
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
@@ -145,7 +148,7 @@ REST_FRAMEWORK = {
 
 SIMPLE_JWT = {
 		# 액세스 토큰의 유효 기간을 5분으로 설정합니다.
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5),
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
 	
     # 리프레시 토큰의 유효 기간을 1일로 설정합니다.
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
