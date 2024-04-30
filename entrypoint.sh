@@ -9,6 +9,7 @@ python manage.py migrate
 # 정적 파일 수집
 python manage.py collectstatic --no-input
 
+RUN pip install gunicorn
 
 # python manage.py create_my_superuser
 
