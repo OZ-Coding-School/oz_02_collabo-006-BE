@@ -108,6 +108,9 @@
 -  
 
 
+
+
+
 ```bash
 poetry add psycopg2
 ```
@@ -115,6 +118,17 @@ poetry add psycopg2
 ```bash
 poetry add psycopg
 ```
+
+```bash
+sudo docker logs
+```
+
+
+```bash
+sudo docker-compose up --build -d
+```
+
+
 
 
 
