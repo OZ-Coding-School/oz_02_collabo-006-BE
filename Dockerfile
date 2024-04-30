@@ -7,8 +7,8 @@ FROM python:3.12
 
 
 
-# 우분투에서 다운로드 속도가 느리기 때문에 다운로드 서버를 바꿔주었다
-RUN sed -i 's@archive.ubuntu.com@mirror.kakao.com@g' /etc/apt/sources.list
+# # 우분투에서 다운로드 속도가 느리기 때문에 다운로드 서버를 바꿔주었다
+# RUN sed -i 's@archive.ubuntu.com@mirror.kakao.com@g' /etc/apt/sources.list
 
 # apt 업그레이트 및 업데이트
 RUN apt-get -y update && apt-get -y dist-upgrade
