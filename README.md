@@ -119,8 +119,11 @@ poetry add psycopg2
 poetry add psycopg
 ```
 
+![alt text](images/markdown-image-1.png)
+
+- 전체 정상적으로 도커 실행됐는데 웹페이지 로딩안될때 로그 보면서 해결하기  
 ```bash
-sudo docker logs
+sudo docker logs [컨테이너명]
 ```
 
 
@@ -128,6 +131,8 @@ sudo docker logs
 sudo docker-compose up --build -d
 ```
 
+
+---
 
 
 
