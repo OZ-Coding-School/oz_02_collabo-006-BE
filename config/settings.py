@@ -20,7 +20,7 @@ SECRET_KEY = 'django-insecure-kjvg#186o8lgqv8_6t0e^su@%mpjy5_-a#ur6x&@&5k*%^%%rx
 # SECURITY WARNING: don't run with debug turned on in production!
 
 if osname_index == 'posix':
-    DEBUG = False
+    DEBUG = True
 else:
     DEBUG = True
 
