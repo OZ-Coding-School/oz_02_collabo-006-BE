@@ -105,6 +105,18 @@
   -  python manage.py create_my_superuser
   -  app폴더내에 다음경로를 만들어서 파일을 만들면 별도로 명령어 생성가능. management/commnads/[somefilename.py]
      -  도커 생성할때 어드민 유저자동생성 `id` admin `비번` 1234
+-  
+
+
+```bash
+poetry add psycopg2
+```
+
+```bash
+poetry add psycopg
+```
+
+
 
 # 주휘 add
 - 포스트에 미디어 추가하는 방법 논의해보기
