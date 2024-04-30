@@ -10,8 +10,7 @@ from rest_framework import status
 from django.db.utils import IntegrityError
 from django.utils.translation import gettext_lazy as _
 from django.shortcuts import get_object_or_404
-from django.views.decorators.csrf import csrf_exempt
-from django.utils.decorators import method_decorator
+
 
 
 
@@ -23,7 +22,6 @@ class UserView(APIView):
         return Response(serializer.data)
     
 
-@method_decorator(csrf_exempt, name='dispatch')
 class Users(APIView):
     def post(self, request, *args, **kwargs):
         serializer = UserSerializer(data=request.data)
