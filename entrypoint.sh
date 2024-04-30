@@ -9,9 +9,6 @@ python manage.py migrate
 # 정적 파일 수집
 python manage.py collectstatic --no-input
 
-
-pip install gunicorn
-
 # python manage.py create_my_superuser
 
 # 커맨드 라인에서 전달된 명령 실행 (CMD에서 정의된 명령)
