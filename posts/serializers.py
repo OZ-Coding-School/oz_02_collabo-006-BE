@@ -4,7 +4,6 @@ from users.serializers import UserSerializer
 from comments.serializers import CommentSerializer
 from medias.serializers import MediaSerializer
 from hashtags.serializers import HashtagSerializer
-import re
 
 class PostSerializer(ModelSerializer):
     user = UserSerializer(read_only=True)

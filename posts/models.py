@@ -8,7 +8,7 @@ class Post(CommonModel):
     content = models.TextField(blank=True)
     comment_ck = models.BooleanField()
     visible = models.BooleanField(default=True)
-    likes = models.IntegerField(default=0)
+    likes = models.PositiveIntegerField(default=0)
 
     # User:Post => 1:N
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -19,6 +19,9 @@ class Post(CommonModel):
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'posts'
 
 class HashtagPost(CommonModel):
     hashtag = models.ForeignKey(Hashtag, on_delete=models.CASCADE)
