@@ -3,6 +3,10 @@ from pathlib import Path
 import os
 
 
+#개발환경과 서버환경 구분을 위한 변수
+osname_index = os.name
+
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -14,7 +18,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-kjvg#186o8lgqv8_6t0e^su@%mpjy5_-a#ur6x&@&5k*%^%%rx'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+
+if osname_index == 'posix':
+    DEBUG = False
+else:
+    DEBUG = True
+
 
 ALLOWED_HOSTS = ['*']
 
