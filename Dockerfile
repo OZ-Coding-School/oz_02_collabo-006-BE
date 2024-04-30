@@ -4,6 +4,11 @@ FROM python:3.12
 # 환경 변수 설정으로 Python 출력을 stdout으로 보내도록 설정합니다.
 ENV PYTHONUNBUFFERED=1
 
+
+RUN mkdir -p /path/to/django/logs/
+
+
+
 # 필요한 시스템 패키지 설치
 # libpq-dev: PostgreSQL 데이터베이스 연동을 위한 라이브러리
 RUN apt-get update \
