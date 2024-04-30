@@ -23,13 +23,12 @@ class UserView(APIView):
         return Response(serializer.data)
     
 
-# post 유저생성
 @method_decorator(csrf_exempt, name='dispatch')
 class Users(APIView):
-    def post(self, request):
+    def post(self, request, *args, **kwargs):
         serializer = UserSerializer(data=request.data)
-        try:
-            if serializer.is_valid(raise_exception=True):
+        if serializer.is_valid(raise_exception=True):
+            try:
                 # Check for password requirements
                 validate_password(serializer.validated_data.get('password'))
                 
@@ -42,42 +41,37 @@ class Users(APIView):
                     "code": 201,
                     "message": "회원가입 성공"
                 }, status=status.HTTP_201_CREATED)
-            
-                
-        except ValidationError as e:
-            errors = []
-            for field, messages in e.detail.items():
-                errors.append({
-                    "field": field,
-                    "message": messages[0]  # Assuming there's at least one message per field
-                })
+            except ValidationError as e:
+                errors = []
+                for field, messages in e.detail.items():
+                    errors.append({
+                        "field": field,
+                        "message": messages[0]  # Assuming there's at least one message per field
+                    })
 
+                return Response({
+                    "error": {
+                        "code": 400,
+                        "message": _("입력값을 확인해주세요."),
+                        "fields": errors
+                    }
+                }, status=status.HTTP_400_BAD_REQUEST)
+            except Exception as e:
+                # Generic error handling
+                return Response({
+                    "error": {
+                        "code": 500,
+                        "message": "서버 내 오류 발생"
+                    }
+                }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        else:
             return Response({
                 "error": {
                     "code": 400,
-                    "message": _("입력값을 확인해주세요."),
-                    "fields": errors
+                    "message": _("유효하지 않은 데이터."),
+                    "details": serializer.errors
                 }
             }, status=status.HTTP_400_BAD_REQUEST)
-        
-        except Exception as e:
-            print(e.message)
-            # Generic error handling
-            return Response({
-                "error": {
-                    "code": 500,
-                    "message": "서버 내 오류 발생"
-                }
-            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-
-        # If all validations pass
-        instance = serializer.save()
-        return Response({
-            "success": True,
-            "message": _("회원가입 성공"),
-            "data": serializer.data
-        }, status=status.HTTP_201_CREATED)
 
 
 
