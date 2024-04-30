@@ -91,7 +91,7 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 
 # 서버에 올렸을때와 로컬완경에서 개발할때의 db 선택
-if os.name == 'posix':
+if osname_index == 'posix':
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
