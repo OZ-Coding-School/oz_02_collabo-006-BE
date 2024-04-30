@@ -40,6 +40,8 @@ class Users(APIView):
                     "message": "회원가입 성공"
                 }, status=status.HTTP_201_CREATED)
             except ValidationError as e:
+                return  Response({"eeror": str(e)})
+
                 errors = []
                 for field, messages in e.detail.items():
                     errors.append({
