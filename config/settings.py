@@ -31,7 +31,14 @@ CORS_ALLOWED_ORIGINS = [
     "http://13.209.16.114:8000",  # 클라이언트 애플리케이션의 출처(origin)에 따라 수정
 ]
 
-
+CORS_ALLOW_HEADERS = (
+    "accept",
+    "authorization",
+    "content-type",
+    "user-agent",
+    "x-csrftoken",
+    "x-requested-with",
+)
 
 # Application definition
 
