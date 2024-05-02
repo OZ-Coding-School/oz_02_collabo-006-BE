@@ -163,7 +163,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
 if osname_index == 'posix':
-    STATIC_URL = '/src/static/'
+    STATIC_URL = '/static/'
     STATICFILES_DIRS = []
 else:
     STATIC_URL = '/static/'
