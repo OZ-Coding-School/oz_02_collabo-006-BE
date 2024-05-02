@@ -50,7 +50,7 @@ class Users(APIView):
 
                 return Response({
                     "error": {
-                        "code": 400,
+                        "code": 403,
                         "message": _("입력값을 확인해주세요."),
                         "fields": errors
                     }
@@ -82,7 +82,7 @@ class Users(APIView):
         else:
             return Response({
                 "error": {
-                    "code": 400,
+                    "code": 401,
                     "message": _("유효하지 않은 데이터."),
                     "details": serializer.errors
                 }
