@@ -65,10 +65,17 @@ class Users(APIView):
             #     }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
             except Exception as e:
                 # Generic error handling
+                errors = []
+                for field, messages in e.detail.items():
+                    errors.append({
+                        "field": field,
+                        "message": messages[0]  # Assuming there's at least one message per field
+                    })
                 return Response({
                     "error": {
                         "code": 500,
-                        "message": str(e)  # 익셉션 메시지를 문자열로 변환하여 반환
+                        "message": _("입력값을 확인해주세요."),
+                        "fields": errors
                     }
                 }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
