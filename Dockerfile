@@ -30,11 +30,29 @@ RUN poetry config virtualenvs.create false \
 # 프로젝트의 나머지 파일을 작업 디렉터리로 복사합니다.
 COPY . /app
 
-# entrypoint.sh 스크립트에 실행 권한을 부여합니다.
-RUN chmod +x /app/entrypoint.sh
 
-# 컨테이너가 시작될 때 실행할 명령어를 설정합니다.
-ENTRYPOINT ["/app/entrypoint.sh"]
+#!/bin/bash
+RUN set -e
+
+RUN python manage.py makemigrations
+
+# 데이터베이스 마이그레이션 실행
+RUN python manage.py migrate
+
+# 정적 파일 수집
+RUN python manage.py collectstatic --no-input --settings=config.settings
+
+# python manage.py create_my_superuser
+
+# 커맨드 라인에서 전달된 명령 실행 (CMD에서 정의된 명령)
+RUN exec "$@"
+
+
+# # entrypoint.sh 스크립트에 실행 권한을 부여합니다.
+# RUN chmod +x /app/entrypoint.sh
+
+# # 컨테이너가 시작될 때 실행할 명령어를 설정합니다.
+# ENTRYPOINT ["/app/entrypoint.sh"]
 
 # gunicorn을 사용하여 Django 앱을 호스트합니다. 이때 포트 8000을 사용합니다.
 CMD ["gunicorn", "config.wsgi:application", "--bind", "0.0.0.0:8000"]
