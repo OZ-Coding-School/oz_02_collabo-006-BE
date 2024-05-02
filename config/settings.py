@@ -164,17 +164,17 @@ USE_TZ = True
 
 if osname_index == 'posix':
     STATIC_URL = '/src/static/'
+    STATICFILES_DIRS = []
 else:
     STATIC_URL = '/static/'
+    STATICFILES_DIRS = [
+    BASE_DIR / "static",
+    ]
     
-
-
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
-STATICFILES_DIRS = [
-    BASE_DIR / "static",
-]
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
