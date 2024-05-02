@@ -55,14 +55,23 @@ class Users(APIView):
                         "fields": errors
                     }
                 }, status=status.HTTP_400_BAD_REQUEST)
+            # except Exception as e:
+            #     # Generic error handling
+            #     return Response({
+            #         "error": {
+            #             "code": 500,
+            #             "message": "서버 내 오류 발생"
+            #         }
+            #     }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
             except Exception as e:
                 # Generic error handling
                 return Response({
                     "error": {
                         "code": 500,
-                        "message": "서버 내 오류 발생"
+                        "message": str(e)  # 익셉션 메시지를 문자열로 변환하여 반환
                     }
                 }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
         else:
             return Response({
                 "error": {
