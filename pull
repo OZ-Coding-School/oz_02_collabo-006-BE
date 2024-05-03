@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+
+git pull origin Feature-docker
+sudo docker-compose -f docker-compose.yml up --build -d
