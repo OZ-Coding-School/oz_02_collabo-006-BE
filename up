@@ -46,4 +46,9 @@ elif [ "$1" = "help" ]; then
     echo "'./up pull'               | git pull origin Feature-docker"
     echo "'./up log [1 or 2 or 3]'  | 1 일경우 ps01 로그보기, 2 일경우 dg01, 3 일경우 ng01"
     echo "'./up docker'             | sudo docker-compose -f docker-compose.yml up --build -d"
+    echo -e "\n------------memo------------\n"
+    echo "docker ps -a                                  | 독커에서 실행중인 프로세서 보기 "
+    echo "sudo ls -la /var/lib/docker                   | 도커 디렉토리 "
+    echo "telnet                                        | 포트 조회 "
+    echo "sudo docker exec -it [프로세서명] /bin/bash    | 프로세서 터미널 실행하기 "
 fi

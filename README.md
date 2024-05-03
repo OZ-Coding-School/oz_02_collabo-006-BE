@@ -79,16 +79,37 @@
 - 요청을 하면 아래와같이 리프래쉬 토큰과 어새스 토큰을 받는다.
 
 ```bash
+
 # http response
 {
     "refresh": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTcxNDEyMzU5MywiaWF0IjoxNzE0MDM3MTkzLCJqdGkiOiI1MmQ4N2IwOGM0NTU0YTU4YThkNTA4Nzg5ODBjM2IzMSIsInVzZXJfaWQiOjF9.XInfEFNPpafiY1h6kzqJixhyeg3oyABjvS6ZL2TvKOw",
     "access": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzE0MDM3NDkzLCJpYXQiOjE3MTQwMzcxOTMsImp0aSI6IjRmZWU3ODc4ZmJiOTRmMTc5MmQxNzBiOGYxOWJhNDNhIiwidXNlcl9pZCI6MX0.hADxc7ys6uGAnVyNFs_oFBHIZhkbZiyJpKbl93Kt-g0"
 }
+
 ```
 
 
 ![alt text](images/markdown-image.png)  
 
+<br>
+
+<br>
+
+<br>
+
+`/api/v1/user/login/sjwt/`
+
+```json
+
+  {
+      "username": "efedf", 
+      "password": "1Rlddawns@", 
+      "phone": "1233345"
+  }
+
+```
+
+<br>
 
 <br>
 
