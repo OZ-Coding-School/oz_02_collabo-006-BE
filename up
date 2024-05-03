@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-
+echo "./up help"
 
 # ./up
 if [ -z "$1" ]; then
@@ -41,4 +41,9 @@ elif [ "$1" = "log" ]; then
 # ./up docker
 elif [ "$1" = "docker" ]; then
     sudo docker-compose -f docker-compose.yml up --build -d
+elif [ "$1" = "help" ]; then
+    echo "'./up'                    | 푸쉬"
+    echo "'./up pull'               | git pull origin Feature-docker"
+    echo "'./up log [1 or 2 or 3]'  | 1 일경우 ps01 로그보기, 2 일경우 dg01, 3 일경우 ng01"
+    echo "'./up docker'             | sudo docker-compose -f docker-compose.yml up --build -d"
 fi
