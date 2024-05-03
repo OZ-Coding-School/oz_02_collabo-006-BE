@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+
+# 변경된 파일들을 스테이징 영역에 추가
+git add .
+
+# 변경 사항이 있는지 확인하고 커밋 메시지를 받음
+echo "커밋 메시지를 입력하세요:"
+read index
+
+# `git status` 명령어의 결과를 변수에 저장
+status=$(git status)
+
+# "working tree clean"이 포함되어 있으면 변경 사항이 없는 것으로 판단
+if [[ $status == *"working tree clean"* ]]; then
+    echo "변경 사항이 없어 커밋할 내용이 없습니다."
+else
+    # 변경 사항이 있으면 커밋을 수행
+    if [ -z "$index" ]; then
+        echo "커밋 메시지가 입력되지 않았습니다."
+    else
+        git commit -m "$index"
+        git push
+    fi
+fi
