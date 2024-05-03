@@ -47,13 +47,6 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
-  certbot:
-    container_name: ct01
-    image: certbot/certbot
-    restart: unless-stopped
-    volumes:
-      - ./data/certbot/conf:/etc/letsencrypt 
-      - ./data/certbot/www:/var/www/certbot
 
 volumes:
   postgres_data:
