@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 
-
+# ./up
 if [ -z "$1" ]; then
     # 변경된 파일들을 스테이징 영역에 추가
     git add .
@@ -25,9 +25,12 @@ if [ -z "$1" ]; then
             git push
         fi
     fi
+# ./up pull
 elif [ "$1" = "pull" ]; then
     git pull origin Feature-docker
+# ./up log [1 or 2 or 3]
 elif [ "$1" = "log" ]; then
+    # 1 일경우 ps01 로그보기, 2 일경우 dg01, 3 일경우 ng01
     if [[ "$1" = "log" && "$2" = 1 ]]; then
         sudo docker logs ps01
     elif [[ "$1" = "log" && "$2" = 2 ]]; then
@@ -35,6 +38,7 @@ elif [ "$1" = "log" ]; then
     elif [[ "$1" = "log" && "$2" = 3 ]]; then
         sudo docker logs ng01
     fi
+# ./up docker
 elif [ "$1" = "docker" ]; then
     sudo docker-compose -f docker-compose.yml up --build -d
 fi
