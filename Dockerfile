@@ -35,7 +35,7 @@ RUN poetry config virtualenvs.create false \
 COPY . /app
 
 # entrypoint.sh 스크립트에 실행 권한을 부여합니다.
-RUN chmod +x /app/entrypoint.sh
+RUN chmod a+x /app/entrypoint.sh
 
 # 컨테이너가 시작될 때 실행할 명령어를 설정합니다.
 ENTRYPOINT ["/app/entrypoint.sh"]
