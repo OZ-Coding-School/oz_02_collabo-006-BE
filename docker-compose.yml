@@ -27,7 +27,7 @@ services:
       - 443:443
     volumes:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf
-      - ./src/static:/usr/share/nginx/html/static
+      - ./static:/usr/share/nginx/html/static
       - static-volume:/static
     depends_on:
       - web
