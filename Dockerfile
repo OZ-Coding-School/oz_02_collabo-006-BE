@@ -20,24 +20,26 @@ RUN apt-get update \
 RUN pip install --upgrade pip \
     && pip install poetry
 
+COPY . /app
+
 # /app 디렉터리를 작업 디렉터리로 설정합니다.
-WORKDIR /src
+WORKDIR /app
 
 # 프로젝트의 Python 종속성 관리 파일을 작업 디렉터리로 복사합니다.
-COPY pyproject.toml poetry.lock* /src/
+COPY pyproject.toml poetry.lock* /app/
 
 # poetry를 사용하여 의존성을 설치합니다. 가상 환경은 생성하지 않습니다.
 RUN poetry config virtualenvs.create false \
     && poetry install --no-dev --no-interaction --no-ansi
 
 # 프로젝트의 나머지 파일을 작업 디렉터리로 복사합니다.
-COPY . /src
+# COPY . /app
 
 # entrypoint.sh 스크립트에 실행 권한을 부여합니다.
-RUN chmod +x /src/entrypoint.sh
+RUN chmod +x /app/entrypoint.sh
 
 # 컨테이너가 시작될 때 실행할 명령어를 설정합니다.
-ENTRYPOINT ["/src/entrypoint.sh"]
+ENTRYPOINT ["/app/entrypoint.sh"]
 
 # gunicorn을 사용하여 Django 앱을 호스트합니다. 이때 포트 8000을 사용합니다.
 # CMD ["gunicorn", "config.wsgi:application", "--bind", "unix:/tmp/gunicorn.sock"]
