@@ -91,6 +91,7 @@
 
 ![alt text](images/markdown-image-1.png)  
 
+![alt text](images/markdown-image-2.png)
 
 <br>
 
