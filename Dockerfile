@@ -38,7 +38,7 @@ COPY entrypoint.sh /app/
 # entrypoint.sh 스크립트에 실행 권한을 부여합니다.
 RUN chmod +x /app/entrypoint.sh
 
-RUM pwd
+RUN pwd
 # 컨테이너가 시작될 때 실행할 명령어를 설정합니다.
 ENTRYPOINT ["entrypoint.sh"]
 
