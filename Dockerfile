@@ -32,7 +32,7 @@ RUN poetry config virtualenvs.create false \
     && poetry install --no-dev --no-interaction --no-ansi
 
 # 프로젝트의 나머지 파일을 작업 디렉터리로 복사합니다.
-COPY . /app
+# COPY . /app
 
 # entrypoint.sh 스크립트에 실행 권한을 부여합니다.
 RUN chmod +x entrypoint.sh
