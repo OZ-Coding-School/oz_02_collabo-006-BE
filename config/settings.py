@@ -120,7 +120,7 @@ if osname_index == 'posix':
             'NAME': 'db',
             'USER': 'admin',
             'PASSWORD': 'admin',
-            'HOST': 'ps01',
+            'HOST': 'db',
             'PORT': '5432',  # 5432는 PostgreSQL의 기본포트이다
         }
     }
