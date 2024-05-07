@@ -23,15 +23,15 @@ RUN pip install --upgrade pip \
 # /app 디렉터리를 작업 디렉터리로 설정합니다.
 WORKDIR /app
 
-COPY . /app
 # 프로젝트의 Python 종속성 관리 파일을 작업 디렉터리로 복사합니다.
-# COPY pyproject.toml poetry.lock* /app/
+COPY pyproject.toml poetry.lock* /app/
 
 # poetry를 사용하여 의존성을 설치합니다. 가상 환경은 생성하지 않습니다.
 RUN poetry config virtualenvs.create false \
-    && poetry install --no-dev --no-interaction --no-ansi
+&& poetry install --no-dev --no-interaction --no-ansi
 
 # 프로젝트의 나머지 파일을 작업 디렉터리로 복사합니다.
+COPY . /app
 
 # entrypoint.sh 스크립트에 실행 권한을 부여합니다.
 RUN chmod +x /app/entrypoint.sh
