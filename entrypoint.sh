@@ -1,6 +1,8 @@
 #!/bin/bash
 set -e
 
+poetry shell
+
 python manage.py makemigrations
 
 # 데이터베이스 마이그레이션 실행
