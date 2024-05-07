@@ -35,7 +35,6 @@ RUN poetry config virtualenvs.create false \
 COPY . /app
 
 COPY /entrypoint.sh /app/entrypoint.sh
-COPY entrypoint.sh /app/entrypoint.sh
 
 # entrypoint.sh 스크립트에 실행 권한을 부여합니다.
 RUN chmod +x /app/entrypoint.sh
