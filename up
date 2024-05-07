@@ -51,4 +51,5 @@ elif [ "$1" = "help" ]; then
     echo "sudo ls -la /var/lib/docker                   | 도커 디렉토리 "
     echo "telnet                                        | 포트 조회 "
     echo "sudo docker exec -it [프로세서명] /bin/bash    | 프로세서 터미널 실행하기 "
+    echo "sudo docker image ls -a                         | 생성된 이미지 목록보기 "
 fi

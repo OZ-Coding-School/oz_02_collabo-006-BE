@@ -176,7 +176,6 @@ if osname_index == 'posix':
 else:
     STATIC_URL = '/static/'
     STATICFILES_DIRS = [
-    BASE_DIR / "static",
     ]
     
 
@@ -242,21 +241,21 @@ SIMPLE_JWT = {
 
 
 
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'handlers': {
-        'file': {
-            'level': 'DEBUG',
-            'class': 'logging.FileHandler',
-            'filename': '/path/to/django/logs/debug.log',  # 로그 파일 경로 수정 필요
-        },
-    },
-    'loggers': {
-        'django': {
-            'handlers': ['file'],
-            'level': 'DEBUG',
-            'propagate': True,
-        },
-    },
-}
+# LOGGING = {
+#     'version': 1,
+#     'disable_existing_loggers': False,
+#     'handlers': {
+#         'file': {
+#             'level': 'DEBUG',
+#             'class': 'logging.FileHandler',
+#             'filename': '/path/to/django/logs/debug.log',  # 로그 파일 경로 수정 필요
+#         },
+#     },
+#     'loggers': {
+#         'django': {
+#             'handlers': ['file'],
+#             'level': 'DEBUG',
+#             'propagate': True,
+#         },
+#     },
+# }
