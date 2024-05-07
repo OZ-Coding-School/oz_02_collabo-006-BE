@@ -21,7 +21,7 @@ RUN pip install --upgrade pip \
     && pip install poetry
 
 # /app 디렉터리를 작업 디렉터리로 설정합니다.
-WORKDIR /src
+WORKDIR /app
 
 # 프로젝트의 Python 종속성 관리 파일을 작업 디렉터리로 복사합니다.
 COPY pyproject.toml poetry.lock* /src/
