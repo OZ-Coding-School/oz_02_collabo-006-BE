@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-poetry shell
+echo "feifj"
 
 python manage.py makemigrations
 
