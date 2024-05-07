@@ -175,8 +175,7 @@ if osname_index == 'posix':
     STATICFILES_DIRS = []
 else:
     STATIC_URL = '/static/'
-    STATICFILES_DIRS = [
-    ]
+    STATICFILES_DIRS = []
     
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
