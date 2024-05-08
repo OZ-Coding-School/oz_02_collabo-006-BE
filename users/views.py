@@ -1,4 +1,6 @@
+from tokenize import TokenError
 from django.shortcuts import render
+from jwt import InvalidTokenError
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from users.serializers import UserSerializer, UserUpdateSerializer, UserLoginSerializer
@@ -13,6 +15,7 @@ from django.shortcuts import get_object_or_404
 
 
 
+
 class UserView(APIView):
     def get(self, request):
         users = User.objects.all()
@@ -21,12 +24,11 @@ class UserView(APIView):
         return Response(serializer.data)
     
 
-# post 유저생성
 class Users(APIView):
-    def post(self, request):
+    def post(self, request, *args, **kwargs):
         serializer = UserSerializer(data=request.data)
-        try:
-            if serializer.is_valid(raise_exception=True):
+        if serializer.is_valid(raise_exception=True):
+            try:
                 # Check for password requirements
                 validate_password(serializer.validated_data.get('password'))
                 
@@ -39,42 +41,45 @@ class Users(APIView):
                     "code": 201,
                     "message": "회원가입 성공"
                 }, status=status.HTTP_201_CREATED)
-            
-                
-        except ValidationError as e:
-            errors = []
-            for field, messages in e.detail.items():
-                errors.append({
-                    "field": field,
-                    "message": messages[0]  # Assuming there's at least one message per field
-                })
+            except ValidationError as e:
+                print(e)
+                errors = []
+                for field, messages in e.detail.items():
+                    errors.append({
+                        "field": field,
+                        "message": messages[0]  # Assuming there's at least one message per field
+                    })
 
+                return Response({
+                    "error": {
+                        "code": 403,
+                        "message": _("입력값을 확인해주세요."),
+                        "fields": errors
+                    }
+                }, status=status.HTTP_400_BAD_REQUEST)
+            except Exception as e:
+                # Generic error handling
+                errors = []
+                for field, messages in e.detail.items():
+                    errors.append({
+                        "field": field,
+                        "message": messages[0]  # Assuming there's at least one message per field
+                    })
+                return Response({
+                    "error": {
+                        "code": 500,
+                        "message": _("입력값을 확인해주세요."),
+                        "fields": errors
+                    }
+                }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        else:
             return Response({
                 "error": {
-                    "code": 400,
-                    "message": _("입력값을 확인해주세요."),
-                    "fields": errors
+                    "code": 401,
+                    "message": _("유효하지 않은 데이터."),
+                    "details": serializer.errors
                 }
             }, status=status.HTTP_400_BAD_REQUEST)
-        
-        except Exception as e:
-            print(e.message)
-            # Generic error handling
-            return Response({
-                "error": {
-                    "code": 500,
-                    "message": "서버 내 오류 발생"
-                }
-            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-
-        # If all validations pass
-        instance = serializer.save()
-        return Response({
-            "success": True,
-            "message": _("회원가입 성공"),
-            "data": serializer.data
-        }, status=status.HTTP_201_CREATED)
 
 
 
@@ -112,21 +117,58 @@ class UserUpdateAPIView(APIView):
 
 
 
-class LoginAPIView(APIView):
-    def post(self, request):
-        serializer = UserLoginSerializer(data=request.data)
-        if serializer.is_valid():
-            user = serializer.validated_data['user']
-            # Here, handle creating/authenticating a token or session for the user
-            return Response({
-                "success": True,
-                "code": 200,
-                "message": "로그인 성공",
-                # Optionally include additional user data or a token here
-            }, status=status.HTTP_200_OK)
-        else:
-            return Response(serializer.errors, status=status.HTTP_401_UNAUTHORIZED)
+# class LoginAPIView(APIView):
+#     def post(self, request):
+#         serializer = UserLoginSerializer(data=request.data)
+#         if serializer.is_valid():
+#             user = serializer.validated_data['user']
+#             # Here, handle creating/authenticating a token or session for the user
+#             return Response({
+#                 "success": True,
+#                 "code": 200,
+#                 "message": "로그인 성공",
+#                 # Optionally include additional user data or a token here
+#             }, status=status.HTTP_200_OK)
+#         else:
+#             return Response(serializer.errors, status=status.HTTP_401_UNAUTHORIZED)
 
+from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.response import Response
+
+class LoginAPIView(TokenObtainPairView):
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+
+        try:
+            serializer.is_valid(raise_exception=True)
+        except TokenError as e:
+            raise InvalidTokenError(e.args[0])
+
+        # 데이터가 유효하면 토큰을 생성합니다.
+        data = serializer.validated_data
+        refresh = RefreshToken.for_user(request.user)
+        
+        # 액세스 토큰을 JSON 응답으로 반환하고,
+        # 리프레시 토큰을 HTTPOnly 쿠키로 설정합니다.
+        response = Response(data)
+        response.set_cookie(
+            key='refresh_token', value=str(refresh), httponly=True, path='/',
+            # secure=True,  # HTTPS에서만 쿠키를 전송합니다.
+            samesite='Strict'  # CSRF 보호를 위해 같은 사이트에서만 쿠키를 전송합니다.
+        )
+        return response
+
+
+class UserDetailView(APIView):
+    # authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        return Response({
+            "username": user.username
+        })
 
 
 class ExampleView(APIView):

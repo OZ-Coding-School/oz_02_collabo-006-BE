@@ -1,35 +1,48 @@
-version: "3"  # docker-compose 버전
+version: "3"
 
 services:
-  nginx:  # 서비스명
-    image: nginx:1.17.10  # nginx:1.17.10 이미지를 사용
-    container_name: ng01  # 컨테이너명
-    ports:
-      - "80:80"  # 포트 개방 "hostPort:dockerPort"으로 포워딩
-    volumes:
-      - ./src:/src  # 소스코드 마운트
-      - ./nginx.conf:/etc/nginx/conf.d/default.conf  # nginx 설정 파일 마운트
-    depends_on:
-      - web  # 'web'컨테이너가 구동되어야만 실행됨
-
   web:
-    build: .  # 메인으로 빌드될 Dockerfile이 현재 폴더에 있음
+    build: .
     container_name: dg01
-    command: >-  # 여러 명령을 한 줄로 표현
-      bash -c "
-      python3 manage.py collectstatic --no-input &&
-      python3 manage.py makemigrations &&
-      python3 manage.py migrate &&
-      gunicorn project.wsgi:application -b 0:80"
+    command: >
+      bash -c "python manage.py collectstatic --no-input &&
+      python manage.py makemigrations &&
+      python manage.py migrate &&
+      gunicorn config.wsgi:application --bind 0.0.0.0:8080"
+    volumes:
+      - ./:/app
+      - static_volume:/app/static
+      - media_volume:/app/media
     depends_on:
       - db
+    ports:
+      - "8080:8080"
+
+  nginx:
+    image: nginx:1.17.10
+    container_name: ng01
+    ports:
+      - 80:80
+      - 443:443
     volumes:
-      - ./src:/src
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+      - static_volume:/usr/share/nginx/html/static
+    depends_on:
+      - web
 
   db:
     image: postgres:12.2
     container_name: ps01
+    ports:
+      - "5432:5432"
     environment:
       POSTGRES_DB: db
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: admin
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
+  static_volume:
+  media_volume:
