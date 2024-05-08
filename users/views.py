@@ -12,7 +12,7 @@ from rest_framework import status
 from django.db.utils import IntegrityError
 from django.utils.translation import gettext_lazy as _
 from django.shortcuts import get_object_or_404
-
+from rest_framework_simplejwt.tokens import AccessToken
 
 class UserView(APIView):
     def get(self, request):
@@ -204,20 +204,24 @@ class UserDetailView(APIView):
         user = request.user
         return Response({"username": user.username})
 
-
+from datetime import timedelta
 class LogoutAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
         try:
+            access_token = request.headers.get("Authorization").split(" ")[1]
+            token = AccessToken(access_token)
+            token.set_exp(lifetime=timedelta(minutes=0))
+
             refresh_token = request.data["refresh"]
-            print(refresh_token)
             token = RefreshToken(refresh_token)
             token.blacklist()
             return Response(
                 {"success": "Logged out"}, status=status.HTTP_205_RESET_CONTENT
             )
         except Exception as e:
+            print(e)
             return Response(
                 {
                     "error": "Refresh token 만료 돼었거나, 없습니다. :",
