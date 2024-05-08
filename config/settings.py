@@ -76,6 +76,7 @@ CUSTOM_APPS = [
     "rest_framework_simplejwt",
     "corsheaders",
     "drf_yasg",
+    "rest_framework_simplejwt.token_blacklist",
 ]
 
 
@@ -183,7 +184,7 @@ else:
     STATICFILES_DIRS = []
 
 
-STATIC_ROOT = '/static/'
+STATIC_ROOT = "/static/"
 # STATIC_ROOT = BASE_DIR / 'static/'
 # STATIC_ROOT = os.path.join(BASE_DIR, "static")
 
