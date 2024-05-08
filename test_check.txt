@@ -1,0 +1,16 @@
+echo "\`\`\`nginx.conf" 
+cat nginx.conf 
+echo "\`\`\`"
+
+
+echo "\`\`\`entrypoint.sh "
+cat entrypoint.sh 
+echo "\`\`\`"
+
+echo "\`\`\`Dockerfile"
+cat Dockerfile
+echo "\`\`\`"
+
+echo "\`\`\`docker-compose.yml"
+cat docker-compose.yml
+echo "\`\`\`"
