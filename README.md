@@ -109,6 +109,15 @@
 
 ```
 
+# swagger
+```bash
+http://127.0.0.1:8000/swagger
+```
+
+![alt text](images/markdown-image-2.png)
+
+
+
 <br>
 
 <br>
