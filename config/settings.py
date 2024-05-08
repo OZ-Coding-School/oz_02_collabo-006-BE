@@ -19,10 +19,10 @@ SECRET_KEY = "django-insecure-kjvg#186o8lgqv8_6t0e^su@%mpjy5_-a#ur6x&@&5k*%^%%rx
 
 # SECURITY WARNING: don't run with debug turned on in production!
 
-if osname_index == "posix":
-    DEBUG = False
-else:
-    DEBUG = True
+# if osname_index == "posix":
+#     DEBUG = False
+# else:
+DEBUG = True
 
 
 ALLOWED_HOSTS = ["*"]
@@ -119,24 +119,24 @@ WSGI_APPLICATION = "config.wsgi.application"
 
 
 # 서버에 올렸을때와 로컬완경에서 개발할때의 db 선택
-if osname_index == "posix":
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.postgresql",
-            "NAME": "db",
-            "USER": "admin",
-            "PASSWORD": "admin",
-            "HOST": "db",
-            "PORT": "5432",  # 5432는 PostgreSQL의 기본포트이다
-        }
+# if osname_index == "posix":
+#     DATABASES = {
+#         "default": {
+#             "ENGINE": "django.db.backends.postgresql",
+#             "NAME": "db",
+#             "USER": "admin",
+#             "PASSWORD": "admin",
+#             "HOST": "db",
+#             "PORT": "5432",  # 5432는 PostgreSQL의 기본포트이다
+#         }
+#     }
+# else:
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": BASE_DIR / "db.sqlite3",
     }
-else:
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.sqlite3",
-            "NAME": BASE_DIR / "db.sqlite3",
-        }
-    }
+}
 
 
 AUTH_USER_MODEL = "users.User"
