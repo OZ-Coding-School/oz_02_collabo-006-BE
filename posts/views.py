@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from .models import Post
 from users.models import User
-from .serializers import PostSerializer, PostDetailSerializer
+from .serializers import PostListSerializer, PostDetailSerializer
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
@@ -23,7 +23,7 @@ class PostList(APIView):
             paginator = Paginator(posts, 12) # 페이지당 12개씩 보여주기
             page_obj = paginator.get_page(page) # 페이지 번호에 해당하는 게시글 가져오기
 
-            serializer = PostSerializer(page_obj, many=True)
+            serializer = PostListSerializer(page_obj, many=True)
 
             return Response({
                 "success": True,
@@ -53,7 +53,7 @@ class PostUser(APIView):
             page = request.GET.get('page', '1')
             paginator = Paginator(posts, 12)
             page_obj = paginator.get_page(page)
-            serializer = PostSerializer(page_obj, many=True)
+            serializer = PostListSerializer(page_obj, many=True)
 
             return Response({
                 "success": True,
@@ -78,7 +78,7 @@ class PostCreate(APIView):
 
     def post(self, request):
         user_data = request.data
-        serializer = PostSerializer(data=user_data)
+        serializer = PostListSerializer(data=user_data)
 
         try:
             if serializer.is_valid(raise_exception=True): # 직렬화 데이터가 유효하면
