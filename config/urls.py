@@ -17,25 +17,25 @@ urlpatterns = [
     path('api/v1/hashtag/', include('hashtags.urls')),
 ]
 
-# # swagger
-# schema_view = get_schema_view(
-#     openapi.Info(
-#         title="네디플",
-#         default_version='1.1.1',
-#         description="네디플 백엔드 API",
-#         # terms_of_service="https://www.google.com/policies/terms/",
-#         # contact=openapi.Contact(email="이메일"), # 부가정보
-#         # license=openapi.License(name="mit"),     # 부가정보
-#     ),
-#     public=True,
-#     permission_classes=[permissions.AllowAny],
-# )
+# swagger
+schema_view = get_schema_view(
+    openapi.Info(
+        title="네디플",
+        default_version='1.1.1',
+        description="네디플 백엔드 API",
+        # terms_of_service="https://www.google.com/policies/terms/",
+        # contact=openapi.Contact(email="이메일"), # 부가정보
+        # license=openapi.License(name="mit"),     # 부가정보
+    ),
+    public=True,
+    permission_classes=[permissions.AllowAny],
+)
 
-# urlpatterns += [
-#     path(r'swagger(?P<format>\.json|\.yaml)', schema_view.without_ui(cache_timeout=0), name='schema-json'),
-#     path(r'swagger', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
-#     path(r'redoc', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc-v1'),
-# ]
+urlpatterns += [
+    path(r'swagger(?P<format>\.json|\.yaml)', schema_view.without_ui(cache_timeout=0), name='schema-json'),
+    path(r'swagger', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
+    path(r'redoc', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc-v1'),
+]
 
 
 
