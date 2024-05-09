@@ -58,7 +58,7 @@ class PostUser(APIView):
             return Response({
                 "success": True,
                 "code": 200,
-                "message": f"{user_id} 게시글 조회 성공",
+                "message": f"USER_ID가 {user_id}인 사용자의 게시글 조회 성공",
                 "data": serializer.data,
                 "current_page": page_obj.number, # 현재 페이지
                 "total_pages": paginator.num_pages # 총 페이지
@@ -153,6 +153,7 @@ class PostUpdate(APIView):
         try:
             post_obj = Post.objects.get(pk=post_id)
 
+            # 게시글 작성자와 현재 유저가 같지 않으면 수정 권한이 없다.
             if post_obj.user != request.user:
                 return Response({
                     "error": {
@@ -165,7 +166,7 @@ class PostUpdate(APIView):
             serializer = PostDetailSerializer(post_obj, data=user_data)
 
             if serializer.is_valid(raise_exception=True):
-                serializer.save() # 사용자 기록
+                serializer.save()
                 return Response({
                     "success": True,
                     "code": 200,
@@ -199,10 +200,13 @@ class PostUpdate(APIView):
 
 # 게시물 삭제
 class PostDelete(APIView):
+    permission_classes = [IsAuthenticated]
+
     def post(self, request, post_id):
         try:
             post_obj = get_object_or_404(Post, pk=post_id)
 
+            # 게시글 작성자와 현재 유저가 같지 않으면 삭제 권한이 없다.
             if post_obj.user != request.user:
                 return Response({
                     "error": {

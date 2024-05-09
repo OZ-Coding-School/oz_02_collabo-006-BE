@@ -2,7 +2,6 @@ from django.db import models
 from common.models import CommonModel
 from users.models import User
 from hashtags.models import Hashtag
-# from medias.models import Media
 
 class Post(CommonModel):
     content = models.TextField(blank=True)
@@ -14,8 +13,6 @@ class Post(CommonModel):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     # Hashtag:Post => N:M
     hashtag = models.ManyToManyField(Hashtag, through='HashtagPost', blank=True)
-    # Media:Post => N:M
-    # media = models.ForeignKey(Media)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
