@@ -312,8 +312,7 @@ def image_upload(request):
         finally:
             default_storage.delete(temp_file_path)
 
-    
-
+    print(uploaded_files)
     return uploaded_files
 
 
