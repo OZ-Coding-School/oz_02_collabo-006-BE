@@ -18,17 +18,17 @@ CONF.read('config.ini')
 
 
 # 전체 게시글 조회
-# 게시글 공개 여부가 True인 것만 공개
+# 게시글 공개 여부가 True인 것만 공개 + 24씩 보내주기
 class PostList(APIView):
     permission_classes = [AllowAny] # 인증여부 상관없이 허용
 
     def get(self, request):
         try:
-            posts = Post.objects.filter(visible=True).order_by('-created_at')
+            posts = Post.objects.filter(visible=True).order_by('-created_at')[:24]
 
             # 페이징
             page = request.GET.get('page', '1') # 디폴트 페이지값 : '1'
-            paginator = Paginator(posts, 12) # 페이지당 12개씩 보여주기
+            paginator = Paginator(posts, 12) # 페이지당 12개씩 보여주기S
             page_obj = paginator.get_page(page) # 페이지 번호에 해당하는 게시글 가져오기
 
             serializer = PostListSerializer(page_obj, many=True)
@@ -85,12 +85,13 @@ class PostCreate(APIView):
     permission_classes = [IsAuthenticated] # 인증된 요청(로그인)에 한해 허용
 
     def post(self, request):
+        image_upload(request)
         user_data = request.data
         serializer = PostListSerializer(data=user_data) # 직렬화
+
         try:
             if serializer.is_valid(raise_exception=True): # 직렬화 데이터가 유효하면
                 serializer.save(user=request.user) # 데이터 저장하기 / request.user : 현재 로그인한 사용자
-                image_upload(request, serializer.data['id'])
                 
                 return Response({
                     "success": True,
@@ -277,11 +278,11 @@ class PostDelete(APIView):
 #     public_url = f"{endpoint_url}/{bucket_name}/{object_name}"
 #     return public_url
 
-from medias.models import Media
 
-def image_upload(request, post_id):
-    post_instance = Post.objects.get(id=post_id)
+def image_upload(request):
+    # 'media' 키로 전송된 모든 이미지 리스트로 가져오기
     images = request.FILES.getlist('media')
+    # 이미지가 전송되지 않으면 에러 반환
     if not images:
         return Response({"error": "No images provided"}, status=400)
 
@@ -292,11 +293,13 @@ def image_upload(request, post_id):
     secret_key = CONF['ncp']['secret']
     bucket_name = 'oz-nediple'
 
+    # boto3 클라이언트 설정
     s3 = boto3.client(
         service_name, endpoint_url=endpoint_url,
         aws_access_key_id=access_key, aws_secret_access_key=secret_key
     )
 
+    # 업로드된 파일 정보 저장
     uploaded_files = []
 
     for image in images:
@@ -310,8 +313,6 @@ def image_upload(request, post_id):
             )
             public_url = f"{endpoint_url}/{bucket_name}/{object_name}"
             uploaded_files.append({"file_name": object_name, "url": public_url})
-            media = Media(file_url=public_url, post=post_instance)
-            media.save()
         finally:
             default_storage.delete(temp_file_path)
 
@@ -361,3 +362,11 @@ def image_upload(request, post_id):
 #             default_storage.delete(temp_file_path)
 
 #     return uploaded_files
+
+class LatestPostsAPI(APIView):
+    def get(self, request):
+        pagenum = request.data['page']
+        latest_posts = Post.objects.all().order_by('-created_at')[(pagenum-1)*24:pagenum*24]
+        latest_posts = Post.objects.all().order_by('-created_at')[:24]
+        serializer = PostListSerializer(latest_posts, many=True)
+        return Response(serializer.data)
