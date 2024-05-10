@@ -11,12 +11,13 @@ from django.utils.translation import gettext_lazy as _
 from django.core.paginator import Paginator
 
 # 전체 게시글 조회
+# 게시글 공개 여부가 True인 것만 공개
 class PostList(APIView):
     permission_classes = [AllowAny] # 인증여부 상관없이 허용
 
     def get(self, request):
         try:
-            posts = Post.objects.order_by('-created_at')
+            posts = Post.objects.filter(visible=True).order_by('-created_at')
 
             # 페이징
             page = request.GET.get('page', '1') # 디폴트 페이지값 : '1'
@@ -47,7 +48,7 @@ class PostUser(APIView):
     def get(self, request, user_id):
         try:
             user = get_object_or_404(User, id=user_id)
-            posts = Post.objects.filter(user=user)
+            posts = Post.objects.filter(user=user, visible=True)
 
             # 페이징
             page = request.GET.get('page', '1')
@@ -78,7 +79,7 @@ class PostCreate(APIView):
 
     def post(self, request):
         user_data = request.data
-        serializer = PostListSerializer(data=user_data)
+        serializer = PostListSerializer(data=user_data) # 직렬화
 
         try:
             if serializer.is_valid(raise_exception=True): # 직렬화 데이터가 유효하면

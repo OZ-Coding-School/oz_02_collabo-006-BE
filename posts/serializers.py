@@ -3,7 +3,6 @@ from .models import Post, HashtagPost
 from users.serializers import UserSerializer
 from comments.serializers import CommentSerializer
 from medias.serializers import MediaSerializer
-from hashtags.serializers import HashtagSerializer
 
 class HashtagPostSerializer(ModelSerializer):
     class Meta:
