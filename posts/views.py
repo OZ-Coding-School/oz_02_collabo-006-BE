@@ -9,6 +9,13 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 from django.core.paginator import Paginator
+from django.core.files.storage import default_storage
+import boto3
+import uuid
+import configparser
+CONF = configparser.ConfigParser()
+CONF.read('config.ini')
+
 
 # 전체 게시글 조회
 # 게시글 공개 여부가 True인 것만 공개
@@ -78,6 +85,7 @@ class PostCreate(APIView):
     permission_classes = [IsAuthenticated] # 인증된 요청(로그인)에 한해 허용
 
     def post(self, request):
+        image_upload(request)
         user_data = request.data
         serializer = PostListSerializer(data=user_data) # 직렬화
 
@@ -231,3 +239,122 @@ class PostDelete(APIView):
                     "message": "서버 내 오류 발생 : " + str(e)
                 }
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+
+
+
+
+# def image_upload(request):
+#     image = request.FILES.get('image')
+#     if not image:
+#         return Response({"error": "No image provided"}, status=400)
+
+#     # Configure S3 client
+#     service_name = 's3'
+#     endpoint_url = 'https://kr.object.ncloudstorage.com'
+#     access_key = CONF['ncp']['access']
+#     secret_key = CONF['ncp']['secret']
+#     bucket_name = 'oz-nediple'
+
+#     s3 = boto3.client(
+#         service_name, endpoint_url=endpoint_url,
+#         aws_access_key_id=access_key, aws_secret_access_key=secret_key
+#     )
+
+#     # Create unique file name and save temporarily
+#     object_name = f"images/{uuid.uuid4()}-{image.name}"
+#     temp_file_path = default_storage.save(object_name, image)
+
+#     try:
+#         # Upload file with public read access
+#         s3.upload_file(
+#             temp_file_path, bucket_name, object_name,
+#             ExtraArgs={'ACL': 'public-read'}
+#         )
+#     finally:
+#         # Clean up temporary file
+#         default_storage.delete(temp_file_path)
+
+#     public_url = f"{endpoint_url}/{bucket_name}/{object_name}"
+#     return public_url
+
+
+def image_upload(request):
+    images = request.FILES.getlist('media')
+    if not images:
+        return Response({"error": "No images provided"}, status=400)
+
+    # S3 Configuration
+    service_name = 's3'
+    endpoint_url = 'https://kr.object.ncloudstorage.com'
+    access_key = CONF['ncp']['access']
+    secret_key = CONF['ncp']['secret']
+    bucket_name = 'oz-nediple'
+
+    s3 = boto3.client(
+        service_name, endpoint_url=endpoint_url,
+        aws_access_key_id=access_key, aws_secret_access_key=secret_key
+    )
+
+    uploaded_files = []
+
+    for image in images:
+        object_name = f"images/{uuid.uuid4()}-{image.name}"
+        temp_file_path = default_storage.save(object_name, image)
+
+        try:
+            s3.upload_file(
+                temp_file_path, bucket_name, object_name,
+                ExtraArgs={'ACL': 'public-read'}
+            )
+            public_url = f"{endpoint_url}/{bucket_name}/{object_name}"
+            uploaded_files.append({"file_name": object_name, "url": public_url})
+        finally:
+            default_storage.delete(temp_file_path)
+
+    print(uploaded_files)
+    return uploaded_files
+
+
+
+# from medias.models import Media  # Ensure you have the correct import for your models
+
+# def image_upload(request):
+#     images = request.FILES.getlist('media')
+#     if not images:
+#         return Response({"error": "No images provided"}, status=400)
+
+#     # S3 Configuration
+#     service_name = 's3'
+#     endpoint_url = 'https://kr.object.ncloudstorage.com'
+#     access_key = CONF['ncp']['access']
+#     secret_key = CONF['ncp']['secret']
+#     bucket_name = 'oz-nediple'
+
+#     s3 = boto3.client(
+#         service_name, endpoint_url=endpoint_url,
+#         aws_access_key_id=access_key, aws_secret_access_key=secret_key
+#     )
+
+#     uploaded_files = []
+
+#     for image in images:
+#         object_name = f"images/{uuid.uuid4()}-{image.name}"
+#         temp_file_path = default_storage.save(object_name, image)
+
+#         try:
+#             s3.upload_file(
+#                 temp_file_path, bucket_name, object_name,
+#                 ExtraArgs={'ACL': 'public-read'}
+#             )
+#             public_url = f"{endpoint_url}/{bucket_name}/{object_name}"
+#             uploaded_files.append({"file_name": object_name, "url": public_url})
+            
+#             # Save to Media model
+#             media = Media(file_url=public_url, post=serializer.instance)
+#             media.save()
+
+#         finally:
+#             default_storage.delete(temp_file_path)
+
+#     return uploaded_files
