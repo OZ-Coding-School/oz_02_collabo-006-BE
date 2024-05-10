@@ -183,14 +183,16 @@ class LoginAPIView(APIView):
             response = Response({
                 'access': str(refresh.access_token),
             })
-            response.set_cookie(
-                key='refresh', 
-                value=str(refresh), 
-                httponly=True,  # 자바스크립트 접근 차단
-                path='/',       # 쿠키가 전송될 경로
-                secure=True,    # HTTPS를 통해서만 쿠키 전송
-                samesite='Lax'  # 같은 도메인에서만 쿠키를 전송
-            )
+            response.set_cookie("access_token", refresh, httponly=False)
+            # response.set_cookie(
+            #     key='refresh', 
+            #     value=str(refresh), 
+            #     httponly=True,  # 자바스크립트 접근 차단
+            #     path='/',       # 쿠키가 전송될 경로
+            #     secure=True,    # HTTPS를 통해서만 쿠키 전송
+            #     samesite='Lax'  # 같은 도메인에서만 쿠키를 전송
+            # )
+
             return response
         else:
             return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)

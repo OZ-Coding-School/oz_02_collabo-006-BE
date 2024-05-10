@@ -28,6 +28,7 @@ else:
 
 ALLOWED_HOSTS = ["*"]
 
+
 CORS_ORIGIN_ALLOW_ALL = True
 
 # CSRF_TRUSTED_ORIGINS = ["*"]
@@ -38,9 +39,9 @@ CORS_ALLOW_METHODS = [
 ]
 
 
-CORS_ALLOWED_ORIGINS = [
-    "http://223.130.133.22/",  # 클라이언트 애플리케이션의 출처(origin)에 따라 수정
-]
+# CORS_ALLOWED_ORIGINS = [
+#     "http://223.130.133.22/",  # 클라이언트 애플리케이션의 출처(origin)에 따라 수정
+# ]
 
 CORS_ALLOW_HEADERS = (
     "accept",
@@ -251,3 +252,9 @@ SIMPLE_JWT = {
 #         },
 #     },
 # }
+
+
+# CORS_ORIGIN_WHITELIST = []
+
+# CORS_ALLOW_CREDENTIALS = True
+
