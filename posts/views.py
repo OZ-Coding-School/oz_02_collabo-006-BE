@@ -85,13 +85,12 @@ class PostCreate(APIView):
     permission_classes = [IsAuthenticated] # 인증된 요청(로그인)에 한해 허용
 
     def post(self, request):
-        image_upload(request)
         user_data = request.data
         serializer = PostListSerializer(data=user_data) # 직렬화
-
         try:
             if serializer.is_valid(raise_exception=True): # 직렬화 데이터가 유효하면
                 serializer.save(user=request.user) # 데이터 저장하기 / request.user : 현재 로그인한 사용자
+                image_upload(request, serializer.data['id'])
                 
                 return Response({
                     "success": True,
@@ -278,8 +277,10 @@ class PostDelete(APIView):
 #     public_url = f"{endpoint_url}/{bucket_name}/{object_name}"
 #     return public_url
 
+from medias.models import Media
 
-def image_upload(request):
+def image_upload(request, post_id):
+    post_instance = Post.objects.get(id=post_id)
     images = request.FILES.getlist('media')
     if not images:
         return Response({"error": "No images provided"}, status=400)
@@ -309,6 +310,8 @@ def image_upload(request):
             )
             public_url = f"{endpoint_url}/{bucket_name}/{object_name}"
             uploaded_files.append({"file_name": object_name, "url": public_url})
+            media = Media(file_url=public_url, post=post_instance)
+            media.save()
         finally:
             default_storage.delete(temp_file_path)
 
