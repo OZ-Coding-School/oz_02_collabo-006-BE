@@ -12,7 +12,7 @@ from rest_framework import status
 from django.db.utils import IntegrityError
 from django.utils.translation import gettext_lazy as _
 from django.shortcuts import get_object_or_404
-
+from rest_framework_simplejwt.tokens import AccessToken
 
 class UserView(APIView):
     def get(self, request):
@@ -183,14 +183,16 @@ class LoginAPIView(APIView):
             response = Response({
                 'access': str(refresh.access_token),
             })
-            response.set_cookie(
-                key='refresh', 
-                value=str(refresh), 
-                httponly=True,  # 자바스크립트 접근 차단
-                path='/',       # 쿠키가 전송될 경로
-                secure=True,    # HTTPS를 통해서만 쿠키 전송
-                samesite='Lax'  # 같은 도메인에서만 쿠키를 전송
-            )
+            response.set_cookie("access_token", refresh, httponly=False)
+            # response.set_cookie(
+            #     key='refresh', 
+            #     value=str(refresh), 
+            #     httponly=True,  # 자바스크립트 접근 차단
+            #     path='/',       # 쿠키가 전송될 경로
+            #     secure=True,    # HTTPS를 통해서만 쿠키 전송
+            #     samesite='Lax'  # 같은 도메인에서만 쿠키를 전송
+            # )
+
             return response
         else:
             return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
@@ -204,20 +206,24 @@ class UserDetailView(APIView):
         user = request.user
         return Response({"username": user.username})
 
-
+from datetime import timedelta
 class LogoutAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
         try:
+            access_token = request.headers.get("Authorization").split(" ")[1]
+            token = AccessToken(access_token)
+            token.set_exp(lifetime=timedelta(minutes=0))
+
             refresh_token = request.data["refresh"]
-            print(refresh_token)
             token = RefreshToken(refresh_token)
             token.blacklist()
             return Response(
                 {"success": "Logged out"}, status=status.HTTP_205_RESET_CONTENT
             )
         except Exception as e:
+            print(e)
             return Response(
                 {
                     "error": "Refresh token 만료 돼었거나, 없습니다. :",

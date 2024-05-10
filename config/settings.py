@@ -1,14 +1,15 @@
 from datetime import timedelta
 from pathlib import Path
-import os
+import platform
 
 
 # 개발환경과 서버환경 구분을 위한 변수
-osname_index = os.name
-
+platform_index = platform.system()
+# Linux
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
 
 
 # Quick-start development settings - unsuitable for production
@@ -19,13 +20,14 @@ SECRET_KEY = "django-insecure-kjvg#186o8lgqv8_6t0e^su@%mpjy5_-a#ur6x&@&5k*%^%%rx
 
 # SECURITY WARNING: don't run with debug turned on in production!
 
-# if osname_index == "posix":
-#     DEBUG = False
-# else:
-DEBUG = True
+if platform_index == "Linux":
+    DEBUG = False
+else:
+    DEBUG = True
 
 
 ALLOWED_HOSTS = ["*"]
+
 
 CORS_ORIGIN_ALLOW_ALL = True
 
@@ -37,9 +39,9 @@ CORS_ALLOW_METHODS = [
 ]
 
 
-CORS_ALLOWED_ORIGINS = [
-    "http://13.209.16.114",  # 클라이언트 애플리케이션의 출처(origin)에 따라 수정
-]
+# CORS_ALLOWED_ORIGINS = [
+#     "http://223.130.133.22/",  # 클라이언트 애플리케이션의 출처(origin)에 따라 수정
+# ]
 
 CORS_ALLOW_HEADERS = (
     "accept",
@@ -119,24 +121,24 @@ WSGI_APPLICATION = "config.wsgi.application"
 
 
 # 서버에 올렸을때와 로컬완경에서 개발할때의 db 선택
-# if osname_index == "posix":
-#     DATABASES = {
-#         "default": {
-#             "ENGINE": "django.db.backends.postgresql",
-#             "NAME": "db",
-#             "USER": "admin",
-#             "PASSWORD": "admin",
-#             "HOST": "db",
-#             "PORT": "5432",  # 5432는 PostgreSQL의 기본포트이다
-#         }
-#     }
-# else:
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+if platform_index == "Linux":
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": "db",
+            "USER": "admin",
+            "PASSWORD": "admin",
+            "HOST": "db",
+            "PORT": "5432",  # 5432는 PostgreSQL의 기본포트이다
+        }
     }
-}
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
+    }
 
 
 AUTH_USER_MODEL = "users.User"
@@ -176,7 +178,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
-if osname_index == "posix":
+if platform_index == "Linux":
     STATIC_URL = "/static/"
     STATICFILES_DIRS = []
 else:
@@ -250,3 +252,9 @@ SIMPLE_JWT = {
 #         },
 #     },
 # }
+
+
+# CORS_ORIGIN_WHITELIST = []
+
+# CORS_ALLOW_CREDENTIALS = True
+
