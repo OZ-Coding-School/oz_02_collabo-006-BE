@@ -3,24 +3,28 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from .models import Post
-from .serializers import PostSerializer, PostDetailSerializer
-from rest_framework.permissions import IsAuthenticated
+from users.models import User
+from .serializers import PostListSerializer, PostDetailSerializer
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 from django.core.paginator import Paginator
 
 # 전체 게시글 조회
+# 게시글 공개 여부가 True인 것만 공개
 class PostList(APIView):
+    permission_classes = [AllowAny] # 인증여부 상관없이 허용
+
     def get(self, request):
         try:
-            posts = Post.objects.order_by('-created_at')
+            posts = Post.objects.filter(visible=True).order_by('-created_at')
 
             # 페이징
             page = request.GET.get('page', '1') # 디폴트 페이지값 : '1'
             paginator = Paginator(posts, 12) # 페이지당 12개씩 보여주기
             page_obj = paginator.get_page(page) # 페이지 번호에 해당하는 게시글 가져오기
 
-            serializer = PostSerializer(page_obj, many=True)
+            serializer = PostListSerializer(page_obj, many=True)
 
             return Response({
                 "success": True,
@@ -32,28 +36,54 @@ class PostList(APIView):
             }, status=status.HTTP_200_OK)
 
         except Exception as e:
-            # print(e)
             return Response({
                 "error": {
                     "code": 500,
-                    "message": "서버 내 오류 발생"
+                    "message": "서버 내 오류 발생 : " + str(e)
                 }
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
 # 특정 유저의 게시물 리스트 조회
+class PostUser(APIView):
+    def get(self, request, user_id):
+        try:
+            user = get_object_or_404(User, id=user_id)
+            posts = Post.objects.filter(user=user, visible=True)
 
+            # 페이징
+            page = request.GET.get('page', '1')
+            paginator = Paginator(posts, 12)
+            page_obj = paginator.get_page(page)
+            serializer = PostListSerializer(page_obj, many=True)
+
+            return Response({
+                "success": True,
+                "code": 200,
+                "message": f"USER_ID가 {user_id}인 사용자의 게시글 조회 성공",
+                "data": serializer.data,
+                "current_page": page_obj.number, # 현재 페이지
+                "total_pages": paginator.num_pages # 총 페이지
+            })
+        
+        except Exception as e:
+            return Response({
+                "error": {
+                    "code": 500,
+                    "message": "서버 내 오류 발생 : " + str(e)
+                }
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
 # 게시글 생성
 class PostCreate(APIView):
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated] # 인증된 요청(로그인)에 한해 허용
 
     def post(self, request):
         user_data = request.data
-        serializer = PostSerializer(data=user_data)
+        serializer = PostListSerializer(data=user_data) # 직렬화
 
         try:
-            if serializer.is_valid(raise_exception=True):
-                serializer.save(user=request.user)
+            if serializer.is_valid(raise_exception=True): # 직렬화 데이터가 유효하면
+                serializer.save(user=request.user) # 데이터 저장하기 / request.user : 현재 로그인한 사용자
                 
                 return Response({
                     "success": True,
@@ -83,14 +113,13 @@ class PostCreate(APIView):
             return Response({
                 "error": {
                     "code": 500,
-                    "message": "서버 내 오류 발생"
+                    "message": "서버 내 오류 발생 : " + str(e)
                 }
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-# 특정 게시글 조회
-# 로그인한 사람만 게시글 조회 가능하게 하기
+# 특정 게시글 상세 조회
 class PostDetail(APIView):
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated] # 인증된 요청(로그인)에 한해 허용
 
     def get(self, request, post_id):
         try:
@@ -115,22 +144,30 @@ class PostDetail(APIView):
             return Response({
                 "error": {
                     "code": 500,
-                    "message": "서버 내 오류 발생"
+                    "message": "서버 내 오류 발생 : " + str(e)
                 }
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 # 게시글 수정
 class PostUpdate(APIView):
-    # permission_classes = [IsAuthenticated]
-
     def post(self, request, post_id):
         try:
             post_obj = Post.objects.get(pk=post_id)
+
+            # 게시글 작성자와 현재 유저가 같지 않으면 수정 권한이 없다.
+            if post_obj.user != request.user:
+                return Response({
+                    "error": {
+                        "code": 403,
+                        "message": "해당 작업을 수행할 권한이 없습니다."
+                    }
+                }, status=status.HTTP_403_FORBIDDEN)
+            
             user_data = request.data
             serializer = PostDetailSerializer(post_obj, data=user_data)
 
             if serializer.is_valid(raise_exception=True):
-                serializer.save() # 사용자 기록
+                serializer.save()
                 return Response({
                     "success": True,
                     "code": 200,
@@ -158,18 +195,19 @@ class PostUpdate(APIView):
             return Response({
                 "error": {
                     "code": 500,
-                    "message": "서버 내 오류 발생"
+                    "message": "서버 내 오류 발생 : " + str(e)
                 }
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 # 게시물 삭제
 class PostDelete(APIView):
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
     def post(self, request, post_id):
         try:
             post_obj = get_object_or_404(Post, pk=post_id)
 
+            # 게시글 작성자와 현재 유저가 같지 않으면 삭제 권한이 없다.
             if post_obj.user != request.user:
                 return Response({
                     "error": {
@@ -183,13 +221,13 @@ class PostDelete(APIView):
             return Response({
                 "success": True,
                 "code": 200,
-                "message": "게시글 수정 성공"
+                "message": "게시글 삭제 성공"
             }, status=status.HTTP_200_OK)
 
         except Exception as e:
             return Response({
                 "error": {
                     "code": 500,
-                    "message": "서버 내 오류 발생"
+                    "message": "서버 내 오류 발생 : " + str(e)
                 }
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
