@@ -26,14 +26,28 @@
   - 설치완료 후 `poetry --version` 으로 설치 확인하기.  
 
   - mac  
-  ```bash
-  curl -sSL https://install.python-poetry.org | python3 -
-  ```
+    - brew 로 설치하기(파이썬 우선 설치하기)  
+    ```bash
+    brew install poetry
+    ```
+
+    - crul로 설치하기
+
+    ```bash
+    curl -sSL https://install.python-poetry.org | python3 -
+    # poetry --version 으로 버전확인이 안되면 설치 후 나타나는 path 추가 명령어 실행해야함. 
+    ```
 
   - windows  
-  ```bash
-  curl -sSL https://install.python-poetry.org | python -
-  ```
+    - pip 으로 설치(파이썬 우선 설치하기)  
+    ```bash
+    pip install poetry
+    ```
+
+    - curl 로 설치하기
+    ```bash
+    curl -sSL https://install.python-poetry.org | python -
+    ```
 
 <br>
 
