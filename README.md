@@ -1,3 +1,18 @@
+---  
+
+# 사용한 서비스  
+- NCP(Cloud Outbound Mailer)
+  - 메일링 서비스에 이용
+
+- NCP(Simple & Easy Notification Service)
+  - 문자메세지 서비스에 이용
+
+- NCP(Server)
+  - aws ec2 비슷함
+
+- NCP(Object Storage)
+  - aws s3 비슷함
+
 
 ---  
 
