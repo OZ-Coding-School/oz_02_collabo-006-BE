@@ -18,31 +18,45 @@ CONF.read('config.ini')
 
 
 # 전체 게시글 조회
-# 게시글 공개 여부가 True인 것만 공개 + 24씩 보내주기
+# 게시글 공개 여부가 True인 것만 공개 + 24씩 보내주기 + 카테고리 new 필드로 불렀을 때 created_at 최신순으로
 class PostList(APIView):
     permission_classes = [AllowAny] # 인증여부 상관없이 허용
 
     def get(self, request):
         try:
-            posts = Post.objects.filter(visible=True).order_by('-created_at')[:24]
+            # 정렬을 위해 'sort' 매개변수 값 가져오기, 기본값은 'new'
+            sort = request.GET.get('sort', 'new')
+            # 만약 'sort'가 'new'일 경우
+            if sort == 'new':
+                # visible(게시글 공개 여부)이 True인 post를 최신순으로 24개씩 가져오기
+                posts = Post.objects.filter(visible=True).order_by('-created_at')[:24]
 
-            # 페이징
-            page = request.GET.get('page', '1') # 디폴트 페이지값 : '1'
-            paginator = Paginator(posts, 12) # 페이지당 12개씩 보여주기S
-            page_obj = paginator.get_page(page) # 페이지 번호에 해당하는 게시글 가져오기
+                # 페이징
+                page = request.GET.get('page', '1') # 디폴트 페이지값 : '1'
+                paginator = Paginator(posts, 12) # 한 페이지당 12개씩 보여주기
+                page_obj = paginator.get_page(page) # 요청된 페이지 번호에 해당하는 게시글 가져오기
 
-            serializer = PostListSerializer(page_obj, many=True)
+                # 페이지에 해당하는 게시글 시리얼라이즈
+                serializer = PostListSerializer(page_obj, many=True)
 
+                return Response({
+                    "success": True,
+                    "code": 200,
+                    "message": "전체 게시글 조회 성공",
+                    "data": serializer.data,
+                    "current_page": page_obj.number, # 현재 페이지
+                    "total_pages": paginator.num_pages # 총 페이지
+                }, status=status.HTTP_200_OK)
+            
+        except ValueError as ve:  # 값 에러가 발생한 경우
             return Response({
-                "success": True,
-                "code": 200,
-                "message": "전체 게시글 조회 성공",
-                "data": serializer.data,
-                "current_page": page_obj.number, # 현재 페이지
-                "total_pages": paginator.num_pages # 총 페이지
-            }, status=status.HTTP_200_OK)
+                "error": {
+                    "code": 400, 
+                    "message": str(ve)
+                }
+            }, status=status.HTTP_400_BAD_REQUEST) 
 
-        except Exception as e:
+        except Exception as e: # 기타 예외 발생
             return Response({
                 "error": {
                     "code": 500,
