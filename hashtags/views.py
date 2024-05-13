@@ -17,9 +17,9 @@ class HashtagCreate(APIView):
 
             # 해시태그 ','로 구분
             hashtag_string = post_data.get('content', '')
-            print(hashtag_string)
+            # ','를 공백으로 대체
             hashtag_string = hashtag_string.replace(",", "")
-            # '#' 제거
+            # '#' 제거 후 공백을 기준으로 해시태그 구분
             hashtag_list = hashtag_string.split("#")
 
             for tag in hashtag_list:
