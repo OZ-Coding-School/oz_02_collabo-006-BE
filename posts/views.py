@@ -102,8 +102,8 @@ class PostCreate(APIView):
 
     def post(self, request):
         image_upload(request)
-        user_data = request.data
-        serializer = PostListSerializer(data=user_data) # 직렬화
+        request_body = request.data
+        serializer = PostListSerializer(data=request_body) # 직렬화
 
         try:
             if serializer.is_valid(raise_exception=True): # 직렬화 데이터가 유효하면
@@ -187,11 +187,12 @@ class PostUpdate(APIView):
                     }
                 }, status=status.HTTP_403_FORBIDDEN)
             
-            user_data = request.data
-            serializer = PostDetailSerializer(post_obj, data=user_data)
+            request_body = request.data
+            serializer = PostDetailSerializer(post_obj, data=request_body)
 
             if serializer.is_valid(raise_exception=True):
                 serializer.save()
+
                 return Response({
                     "success": True,
                     "code": 200,
