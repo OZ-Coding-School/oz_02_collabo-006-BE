@@ -31,3 +31,25 @@ class PostDetailSerializer(ModelSerializer):
     class Meta:
         model = Post
         fields = '__all__'
+
+
+from rest_framework import serializers
+from hashtags.models import Hashtag
+
+class PostCreateSerializer(serializers.ModelSerializer):
+    hashtag = serializers.CharField(write_only=True)
+
+    class Meta:
+        model = Post
+        fields = ['content', 'comment_ck', 'visible', 'hashtag']
+
+    def create(self, validated_data):
+        hashtag_data = validated_data.pop('hashtag', None)
+        post = Post.objects.create(**validated_data)
+        if hashtag_data:
+            # Split the hashtag string and remove duplicate hashtags
+            hashtags = set(tag.strip() for tag in hashtag_data.split('#') if tag.strip())
+            for tag in hashtags:
+                hashtag, created = Hashtag.objects.get_or_create(content=tag)
+                HashtagPost.objects.create(post=post, hashtag=hashtag)
+        return post

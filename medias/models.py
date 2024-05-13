@@ -5,7 +5,7 @@ from posts.models import Post
 class Media(CommonModel):
     file_url = models.URLField()
 
-    # Post:Media => 
+    # Post:Media => 1:N
     post = models.ForeignKey(Post, on_delete=models.CASCADE)
 
     created_at = models.DateTimeField(auto_now_add=True)

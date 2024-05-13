@@ -4,7 +4,8 @@ from rest_framework.response import Response
 from rest_framework import status
 from .models import Post
 from users.models import User
-from .serializers import PostListSerializer, PostDetailSerializer
+from medias.models import Media
+from .serializers import PostListSerializer, PostDetailSerializer, PostCreateSerializer
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
@@ -96,22 +97,89 @@ class PostUser(APIView):
                 }
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
-# 게시글 생성
+# # 게시글 생성
+# class PostCreate(APIView):
+#     permission_classes = [IsAuthenticated] # 인증된 요청(로그인)에 한해 허용
+
+#     def post(self, request):
+#         image_upload(request)
+#         request_body = request.data
+
+#         # 해시태그 ','로 구분
+#         hashtag_string = request_body.get('hashtag', '')
+#         # ','를 공백으로 대체
+#         hashtag_string = hashtag_string.replace(",", "")
+#         # '#' 제거 후 공백을 기준으로 해시태그 구분
+#         hashtag_list = hashtag_string.split("#")
+#         for tag in hashtag_list:
+#             # 양쪽 공벡 제거
+#             tag_content = tag.strip()
+#             if tag_content == "":
+#                 continue
+#             hashtag, created = Hashtag.objects.get_or_create(content=tag_content)
+#             print(hashtag, "hashtag")
+#             print('------------------------')
+#             print(created, "created")
+
+#         serializer = PostListSerializer(data=request_body) # 직렬화
+
+#         try:
+#             if serializer.is_valid(raise_exception=True): # 직렬화 데이터가 유효하면
+#                 serializer.save(user=request.user) # 데이터 저장하기 / request.user : 현재 로그인한 사용자
+            
+#                 return Response({
+#                     "success": True,
+#                     "code": 201,
+#                     "message": "게시글 생성 성공",
+#                     "data": serializer.data
+#                 }, status=status.HTTP_201_CREATED)
+            
+#         except ValidationError as e:
+#             errors = []
+#             for field, messages in e.detail.items():
+#                 errors.append({
+#                     "field": field,
+#                     "message": messages[0]
+#                 })
+
+#             return Response({
+#                 "error": {
+#                     "code": 400,
+#                     "message": _("입력값을 확인해주세요."),
+#                     "fields": errors
+#                 }
+#             }, status=status.HTTP_400_BAD_REQUEST)
+        
+#         except Exception as e:
+#             print(e)
+#             return Response({
+#                 "error": {
+#                     "code": 500,
+#                     "message": "서버 내 오류 발생 : " + str(e)
+#                 }
+#             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
 class PostCreate(APIView):
-    permission_classes = [IsAuthenticated] # 인증된 요청(로그인)에 한해 허용
+    permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        image_upload(request)
-        request_body = request.data
-        serializer = PostListSerializer(data=request_body) # 직렬화
+        media_list = image_upload(request)
+        serializer = PostCreateSerializer(data=request.data)
 
         try:
-            if serializer.is_valid(raise_exception=True): # 직렬화 데이터가 유효하면
-                serializer.save(user=request.user) # 데이터 저장하기 / request.user : 현재 로그인한 사용자
-                
+            if serializer.is_valid():
+                post = serializer.save(user=request.user)  # Pass the user from the request
+
+            if media_list:
+                for media_url in media_list:
+                    Media.objects.create(file_url=media_url, post=Post.objects.get(id=post.id))
+
                 return Response({
                     "success": True,
                     "code": 201,
+                    "id": post.id,
+                    "content": post.content,
                     "message": "게시글 생성 성공",
                     "data": serializer.data
                 }, status=status.HTTP_201_CREATED)
@@ -140,6 +208,10 @@ class PostCreate(APIView):
                     "message": "서버 내 오류 발생 : " + str(e)
                 }
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+
+
 
 # 특정 게시글 상세 조회
 class PostDetail(APIView):
@@ -298,7 +370,8 @@ def image_upload(request):
                 ExtraArgs={'ACL': 'public-read'}
             )
             public_url = f"{endpoint_url}/{bucket_name}/{object_name}"
-            uploaded_files.append({"file_name": object_name, "url": public_url})
+            uploaded_files.append(public_url)
+            # uploaded_files.append({"file_name": object_name, "url": public_url})
         finally:
             # 임시 파일 삭제
             default_storage.delete(temp_file_path)
