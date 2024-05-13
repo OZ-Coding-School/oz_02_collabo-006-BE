@@ -32,7 +32,7 @@ class PostList(APIView):
                 posts = Post.objects.filter(visible=True).order_by('-created_at')[:24]
 
                 # 페이징
-                page = request.GET.get('page', '1') # 디폴트 페이지값 : '1'
+                page = int(request.GET.get('page', '1')) # 디폴트 페이지값 : '1' -> 정수형으로 변환
                 paginator = Paginator(posts, 12) # 한 페이지당 12개씩 보여주기
                 page_obj = paginator.get_page(page) # 요청된 페이지 번호에 해당하는 게시글 가져오기
 
@@ -47,14 +47,6 @@ class PostList(APIView):
                     "current_page": page_obj.number, # 현재 페이지
                     "total_pages": paginator.num_pages # 총 페이지
                 }, status=status.HTTP_200_OK)
-            
-        except ValueError as ve:  # 값 에러가 발생한 경우
-            return Response({
-                "error": {
-                    "code": 400, 
-                    "message": str(ve)
-                }
-            }, status=status.HTTP_400_BAD_REQUEST) 
 
         except Exception as e: # 기타 예외 발생
             return Response({
@@ -376,11 +368,3 @@ def image_upload(request):
 #             default_storage.delete(temp_file_path)
 
 #     return uploaded_files
-
-class LatestPostsAPI(APIView):
-    def get(self, request):
-        pagenum = request.data['page']
-        latest_posts = Post.objects.all().order_by('-created_at')[(pagenum-1)*24:pagenum*24]
-        latest_posts = Post.objects.all().order_by('-created_at')[:24]
-        serializer = PostListSerializer(latest_posts, many=True)
-        return Response(serializer.data)
