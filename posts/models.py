@@ -5,8 +5,8 @@ from hashtags.models import Hashtag
 
 class Post(CommonModel):
     content = models.TextField(blank=True)
-    comment_ck = models.BooleanField()
-    visible = models.BooleanField(default=True)
+    comment_ck = models.BooleanField(default=True) # 댓글 작성 가능 여부
+    visible = models.BooleanField(default=True) # 게시글 조회 가능 여부
     likes = models.PositiveIntegerField(default=0)
 
     # User:Post => 1:N
@@ -22,7 +22,7 @@ class Post(CommonModel):
 
 class HashtagPost(CommonModel):
     hashtag = models.ForeignKey(Hashtag, on_delete=models.CASCADE)
-    post = models.ForeignKey('Post', on_delete=models.CASCADE)
+    post = models.ForeignKey(Post, on_delete=models.CASCADE)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
