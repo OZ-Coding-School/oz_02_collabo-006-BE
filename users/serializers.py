@@ -7,7 +7,7 @@ from django.contrib.auth import authenticate
 class UserSerializer(ModelSerializer):
     class Meta:
         model = User
-        fields = "__all__"
+        fields = ["id","username","phone","email","profile_image","subscription","status","created_at","updated_at"]
         # 현재의 모델과 연결된 모델들까지 serialize 시키겠다는 뜻        
         # Feed - User 모델 => 현재 코드는 Feed 모델 객체를 직렬화 하고 있지만,
         # depth = 1 이라는 코드를 통해 User 객체도 직렬화하겠다는 뜻.
@@ -27,6 +27,7 @@ class UserSerializer(ModelSerializer):
         if value and not User.objects.filter(username=value).exists():
             raise serializers.ValidationError("유효하지 않은 추천인입니다.")
         return value
+
 
 
 

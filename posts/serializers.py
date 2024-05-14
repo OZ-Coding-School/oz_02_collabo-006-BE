@@ -7,7 +7,6 @@ from hashtags.serializers import HashtagSerializer
 from hashtags.models import Hashtag
 from rest_framework import serializers
 
-
 class HashtagPostSerializer(ModelSerializer):
     class Meta:
         model = HashtagPost
