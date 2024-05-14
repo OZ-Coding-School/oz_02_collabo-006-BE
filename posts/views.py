@@ -166,6 +166,9 @@ class PostCreate(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
+        # 오류방지용
+        if request.data['media'] == []:
+            return Response(status=200)
         media_list = image_upload(request)
         serializer = PostCreateSerializer(data=request.data)
 
