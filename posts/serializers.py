@@ -33,10 +33,17 @@ class PostDetailSerializer(ModelSerializer):
     # Post:Media => Post -> Media(FK)
     media_set = MediaSerializer(many=True)
 
+    # Post, Hashtag -> ManyToManyField 관계 처리
+    hashtag = serializers.SerializerMethodField()
+
     class Meta:
         model = Post
         fields = '__all__'
 
+    # 게시글과 연결된 해시태그 가져오기
+    def get_hashtag(self, post):
+        hashtags = post.hashtag.all()
+        return [hashtag.content for hashtag in hashtags]
 
 # 게시글 생성 시리얼라이즈
 class PostCreateSerializer(ModelSerializer):
@@ -49,6 +56,7 @@ class PostCreateSerializer(ModelSerializer):
         model = Post
         fields = '__all__'
 
+    # 해시태그 생성
     def create(self, validated_data):
         # hashtag 추출, 나머지 필드는 그대로 둠
         hashtag_data = validated_data.pop('hashtag', None)

@@ -110,7 +110,6 @@ class PostCreate(APIView):
         media_list = image_upload(request)
         serializer = PostCreateSerializer(data=request.data)
 
-
         try:
             if serializer.is_valid():
                 post = serializer.save(user=request.user) # 유저 정보 담기
@@ -161,7 +160,18 @@ class PostDetail(APIView):
     def get(self, request, post_id):
         try:
             post_obj = Post.objects.get(pk=post_id)
+
+            # visible이 False일 때 현재 사용자가 해당 게시글의 작성자가 아닌 경우, 게시글 조회 불가능
+            if not post_obj.visible and post_obj.user != request.user:
+                return Response({
+                    "error": {
+                        "code": 403,
+                        "message": "해당 게시글은 비공개 상태입니다."
+                    }
+                }, status=status.HTTP_403_FORBIDDEN)
+            
             serializer = PostDetailSerializer(post_obj)
+
             return Response({
                 "success": True,
                 "code": 200,
