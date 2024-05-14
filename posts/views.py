@@ -103,9 +103,6 @@ class PostCreate(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        # 오류방지용
-        if request.data['media'] == []:
-            return Response(status=200)
         
         media_list = image_upload(request)
         serializer = PostCreateSerializer(data=request.data)
@@ -210,18 +207,25 @@ class PostUpdate(APIView):
                     }
                 }, status=status.HTTP_403_FORBIDDEN)
             
-            request_body = request.data
-            serializer = PostDetailSerializer(post_obj, data=request_body)
+            if post_obj.user == request.user:
+                request_body = request.data
+                media_list = image_upload(request)
+                serializer = PostCreateSerializer(post_obj, data=request_body)
 
-            if serializer.is_valid(raise_exception=True):
-                serializer.save()
+                if serializer.is_valid(raise_exception=True):
+                    post = serializer.save()
 
-                return Response({
-                    "success": True,
-                    "code": 200,
-                    "message": "게시글 수정 성공",
-                    "data": serializer.data
-                }, status=status.HTTP_200_OK)
+                    if media_list:
+                        for media_url in media_list:
+                            media, created = Media.objects.get_or_create(file_url=media_url)
+                            post.media_set.add(media)
+
+                    return Response({
+                        "success": True,
+                        "code": 200,
+                        "message": "게시글 수정 성공",
+                        "data": serializer.data
+                    }, status=status.HTTP_200_OK)
             
         except ValidationError as e:
             errors = []
