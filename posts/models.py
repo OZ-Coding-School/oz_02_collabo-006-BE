@@ -3,6 +3,7 @@ from common.models import CommonModel
 from users.models import User
 from hashtags.models import Hashtag
 
+# 게시글 테이블
 class Post(CommonModel):
     content = models.TextField(blank=True)
     comment_ck = models.BooleanField(default=True) # 댓글 작성 가능 여부
@@ -20,6 +21,7 @@ class Post(CommonModel):
     class Meta:
         db_table = 'posts'
 
+# 해시태그-게시글 중간테이블
 class HashtagPost(CommonModel):
     hashtag = models.ForeignKey(Hashtag, on_delete=models.CASCADE)
     post = models.ForeignKey(Post, on_delete=models.CASCADE)
