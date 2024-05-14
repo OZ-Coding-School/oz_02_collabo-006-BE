@@ -3,6 +3,9 @@ from .models import Post, HashtagPost
 from users.serializers import UserSerializer
 from comments.serializers import CommentSerializer
 from medias.serializers import MediaSerializer
+from hashtags.serializers import HashtagSerializer
+from hashtags.models import Hashtag
+from rest_framework import serializers
 
 class HashtagPostSerializer(ModelSerializer):
     class Meta:
@@ -33,15 +36,17 @@ class PostDetailSerializer(ModelSerializer):
         fields = '__all__'
 
 
-from rest_framework import serializers
-from hashtags.models import Hashtag
 
-class PostCreateSerializer(serializers.ModelSerializer):
-    hashtag = serializers.CharField(write_only=True)
+class PostCreateSerializer(ModelSerializer):
+    user = UserSerializer(read_only=True)
+    hashtag_post = HashtagPostSerializer(many=True, required=False)
+    media_set = MediaSerializer(many=True, required=False)
+    hashtag = serializers.CharField(write_only=True, allow_blank=True, required=False)
+
 
     class Meta:
         model = Post
-        fields = ['content', 'comment_ck', 'visible', 'hashtag']
+        fields = '__all__'
 
     def create(self, validated_data):
         hashtag_data = validated_data.pop('hashtag', None)
@@ -53,3 +58,6 @@ class PostCreateSerializer(serializers.ModelSerializer):
                 hashtag, created = Hashtag.objects.get_or_create(content=tag)
                 HashtagPost.objects.create(post=post, hashtag=hashtag)
         return post
+
+
+

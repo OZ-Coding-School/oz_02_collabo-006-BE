@@ -160,20 +160,25 @@ class PostUser(APIView):
 #             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
+
+
 class PostCreate(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
+        # 오류방지용
+        if request.data['media'] == []:
+            return Response(status=200)
         media_list = image_upload(request)
         serializer = PostCreateSerializer(data=request.data)
+
 
         try:
             if serializer.is_valid():
                 post = serializer.save(user=request.user)  # Pass the user from the request
-
-            if media_list:
-                for media_url in media_list:
-                    Media.objects.create(file_url=media_url, post=Post.objects.get(id=post.id))
+                if media_list:
+                    for media_url in media_list:
+                        Media.objects.create(file_url=media_url, post=Post.objects.get(id=post.id))
 
                 return Response({
                     "success": True,
@@ -208,6 +213,61 @@ class PostCreate(APIView):
                     "message": "서버 내 오류 발생 : " + str(e)
                 }
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+
+
+
+# class PostCreate(APIView):
+#     permission_classes = [IsAuthenticated]
+
+#     def post(self, request):
+#         media_list = image_upload(request)
+#         serializer = PostCreateSerializer(data=request.data)
+
+        
+
+#         try:
+#             if serializer.is_valid():
+#                 post = serializer.save(user=request.user)  # Pass the user from the request
+
+#                 # if media_list:
+#                 #     for media_url in media_list:
+#                 #         Media.objects.create(file_url=media_url, post=Post.objects.get(id=post.id))
+
+#                 return Response({
+#                     "success": True,
+#                     "code": 201,
+#                     "id": post.id,
+#                     "content": post.content,
+#                     "message": "게시글 생성 성공",
+#                     "data": serializer.data
+#                 }, status=status.HTTP_201_CREATED)
+            
+#         except ValidationError as e:
+#             errors = []
+#             for field, messages in e.detail.items():
+#                 errors.append({
+#                     "field": field,
+#                     "message": messages[0]
+#                 })
+
+#             return Response({
+#                 "error": {
+#                     "code": 400,
+#                     "message": _("입력값을 확인해주세요."),
+#                     "fields": errors
+#                 }
+#             }, status=status.HTTP_400_BAD_REQUEST)
+        
+#         except Exception as e:
+#             print(e)
+#             return Response({
+#                 "error": {
+#                     "code": 500,
+#                     "message": "서버 내 오류 발생 : " + str(e)
+#                 }
+#             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 
@@ -378,3 +438,5 @@ def image_upload(request):
 
     print(uploaded_files)
     return uploaded_files
+
+
