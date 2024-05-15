@@ -70,6 +70,7 @@ CUSTOM_USER_APPS = [
     "comments.apps.CommentsConfig",
     "hashtags.apps.HashtagsConfig",
     "follow.apps.FollowConfig",
+    "archive.apps.ArchiveConfig",
 ]
 
 CUSTOM_APPS = [

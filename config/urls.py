@@ -16,6 +16,7 @@ urlpatterns = [
     path('api/v1/post/', include('posts.urls')),
     path('api/v1/hashtag/', include('hashtags.urls')),
     path('api/v1/', include('follow.urls')),
+    path('api/v1/archive/', include('archive.urls')),
 ]
 
 # # swagger
