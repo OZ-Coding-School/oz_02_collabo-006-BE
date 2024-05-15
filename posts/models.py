@@ -31,3 +31,16 @@ class HashtagPost(CommonModel):
 
     class Meta:
         db_table = 'hashtag_post'
+
+# 좋아요 테이블
+class Like(CommonModel):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    post = models.ForeignKey(Post, on_delete=models.CASCADE)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['user', 'post'], name='unique_user_post')
+        ]
