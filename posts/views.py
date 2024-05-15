@@ -96,19 +96,17 @@ class PostUser(APIView):
                     "message": "서버 내 오류 발생 : " + str(e)
                 }
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        
 
 # 게시글 생성
 class PostCreate(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        
         media_list = image_upload(request)
         serializer = PostCreateSerializer(data=request.data)
 
         try:
-            if serializer.is_valid():
+            if serializer.is_valid(raise_exception=True):
                 post = serializer.save(user=request.user) # 유저 정보 담기
 
                 if media_list:
@@ -141,7 +139,6 @@ class PostCreate(APIView):
             }, status=status.HTTP_400_BAD_REQUEST)
         
         except Exception as e:
-            print(e)
             return Response({
                 "error": {
                     "code": 500,
@@ -206,27 +203,32 @@ class PostUpdate(APIView):
                         "message": "해당 작업을 수행할 권한이 없습니다."
                     }
                 }, status=status.HTTP_403_FORBIDDEN)
-            
-            if post_obj.user == request.user:
-                request_body = request.data
+
+            serializer = PostCreateSerializer(post_obj, data=request.data)
+
+            if serializer.is_valid(raise_exception=True):
+                post = serializer.save()
                 media_list = image_upload(request)
-                serializer = PostCreateSerializer(post_obj, data=request_body)
 
-                if serializer.is_valid(raise_exception=True):
-                    post = serializer.save()
+                # 미디어 수정
+                if media_list:
+                    for media_url in media_list:
+                        # 미디어가 리스트에 없으면 생성 (수정 시 이미지 추가)
+                        media, created = Media.objects.get_or_create(file_url=media_url)
+                        post.media_set.add(media)
 
-                    if media_list:
-                        for media_url in media_list:
-                            media, created = Media.objects.get_or_create(file_url=media_url)
-                            post.media_set.add(media)
+                    for media in post.media_set.all():
+                        # DB에 파일이 리스트에 없으면 재거 (수정 시 이미지 제거)
+                        if media.file_url not in media_list:
+                            post.media_set.remove(media)
 
-                    return Response({
-                        "success": True,
-                        "code": 200,
-                        "message": "게시글 수정 성공",
-                        "data": serializer.data
-                    }, status=status.HTTP_200_OK)
-            
+                return Response({
+                    "success": True,
+                    "code": 200,
+                    "message": "게시글 수정 성공",
+                    "data": serializer.data
+                }, status=status.HTTP_200_OK)
+        
         except ValidationError as e:
             errors = []
             for field, messages in e.detail.items():
@@ -268,13 +270,14 @@ class PostDelete(APIView):
                     }
                 }, status=status.HTTP_403_FORBIDDEN)
 
-            post_obj.delete()
+            if post_obj.user == request.user:
+                post_obj.delete()
 
-            return Response({
-                "success": True,
-                "code": 200,
-                "message": "게시글 삭제 성공"
-            }, status=status.HTTP_200_OK)
+                return Response({
+                    "success": True,
+                    "code": 200,
+                    "message": "게시글 삭제 성공"
+                }, status=status.HTTP_200_OK)
 
         except Exception as e:
             return Response({
@@ -290,7 +293,7 @@ def image_upload(request):
     # Base64로 인코딩된 이미지 데이터 리스트 추출
     base64_strings = request.data.get('media')
     if not base64_strings:
-        return Response({"error": "No image data provided"}, status=400)
+        return []
     
     # S3 Configuration
     service_name = 's3'
@@ -333,5 +336,3 @@ def image_upload(request):
 
     print(uploaded_files)
     return uploaded_files
-
-
