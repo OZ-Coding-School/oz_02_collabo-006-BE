@@ -5,6 +5,7 @@ from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
+from users.models import User
 
 class FollowerCreate(APIView):
     permission_classes = [IsAuthenticated]
@@ -18,13 +19,19 @@ class FollowerCreate(APIView):
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
+# user = User.objects.get(id=1)
+# followers = user.follower_from.all()
 
 class FollowerDetail(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, user_id):
+        print(user_id, "user_id")
         try:
-            follower_obj = get_object_or_404(Follower, pk=user_id)
+            user = User.objects.get(id=user_id)
+            follower_obj = user.follower_from.all()
+            # follower_obj = get_object_or_404(Follower, pk=user_id)
+            print(follower_obj, "follower_obj")
             serializer = FollowerSerializer(follower_obj)
             return Response(serializer.data, status=status.HTTP_200_OK)
         
