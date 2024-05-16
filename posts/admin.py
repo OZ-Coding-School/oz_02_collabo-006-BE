@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Post, HashtagPost
+from .models import Post, HashtagPost, Like
 
 # 게시글 admin
 @admin.register(Post)
@@ -9,4 +9,9 @@ class PostAdmin(admin.ModelAdmin):
 # 게시글-해시태그 중간테이블 admin
 @admin.register(HashtagPost)
 class HashtagPostAdmin(admin.ModelAdmin):
+    pass
+
+# 좋아요 admin
+@admin.register(Like)
+class LikeAdmin(admin.ModelAdmin):
     pass
