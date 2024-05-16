@@ -1,4 +1,4 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import get_object_or_404
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -16,12 +16,6 @@ import uuid
 import base64
 from django.core.files.base import ContentFile
 # from io import BytesIO
-
-
-
-
-
-
 
 import configparser
 CONF = configparser.ConfigParser()

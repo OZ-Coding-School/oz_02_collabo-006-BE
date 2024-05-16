@@ -69,6 +69,7 @@ CUSTOM_USER_APPS = [
     "medias.apps.MediasConfig",
     "comments.apps.CommentsConfig",
     "hashtags.apps.HashtagsConfig",
+    "follow.apps.FollowConfig",
 ]
 
 CUSTOM_APPS = [
