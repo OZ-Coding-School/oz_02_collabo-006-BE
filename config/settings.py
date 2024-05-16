@@ -62,6 +62,7 @@ DJANGO_SYSTEM_APPS = [
 ]
 
 CUSTOM_USER_APPS = [
+    "searching.apps.SearchingConfig",
     "users.apps.UsersConfig",
     "common.apps.CommonConfig",
     "posts.apps.PostsConfig",
