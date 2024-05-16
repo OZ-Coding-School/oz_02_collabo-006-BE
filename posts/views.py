@@ -281,13 +281,20 @@ class PostDelete(APIView):
                 }
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
+class PostLike(APIView):
+    permission_classes = [IsAuthenticated]
 
+    # 리스트? 개별 조회?
+    def get(self, request):
+
+    def post(self, )
+        
 
 def image_upload(request):
     # Base64로 인코딩된 이미지 데이터 리스트 추출
     base64_strings = request.data.get('media')
     if not base64_strings:
-        return []
+        return Response({"error": "No images provided"}, status=400)
     
     # S3 Configuration
     service_name = 's3'
@@ -330,3 +337,5 @@ def image_upload(request):
 
     print(uploaded_files)
     return uploaded_files
+
+
