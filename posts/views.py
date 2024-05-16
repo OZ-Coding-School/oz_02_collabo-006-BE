@@ -90,86 +90,19 @@ class PostUser(APIView):
                     "message": "서버 내 오류 발생 : " + str(e)
                 }
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        
-# # 게시글 생성
-# class PostCreate(APIView):
-#     permission_classes = [IsAuthenticated] # 인증된 요청(로그인)에 한해 허용
 
-#     def post(self, request):
-#         image_upload(request)
-#         request_body = request.data
-
-#         # 해시태그 ','로 구분
-#         hashtag_string = request_body.get('hashtag', '')
-#         # ','를 공백으로 대체
-#         hashtag_string = hashtag_string.replace(",", "")
-#         # '#' 제거 후 공백을 기준으로 해시태그 구분
-#         hashtag_list = hashtag_string.split("#")
-#         for tag in hashtag_list:
-#             # 양쪽 공벡 제거
-#             tag_content = tag.strip()
-#             if tag_content == "":
-#                 continue
-#             hashtag, created = Hashtag.objects.get_or_create(content=tag_content)
-#             print(hashtag, "hashtag")
-#             print('------------------------')
-#             print(created, "created")
-
-#         serializer = PostListSerializer(data=request_body) # 직렬화
-
-#         try:
-#             if serializer.is_valid(raise_exception=True): # 직렬화 데이터가 유효하면
-#                 serializer.save(user=request.user) # 데이터 저장하기 / request.user : 현재 로그인한 사용자
-            
-#                 return Response({
-#                     "success": True,
-#                     "code": 201,
-#                     "message": "게시글 생성 성공",
-#                     "data": serializer.data
-#                 }, status=status.HTTP_201_CREATED)
-            
-#         except ValidationError as e:
-#             errors = []
-#             for field, messages in e.detail.items():
-#                 errors.append({
-#                     "field": field,
-#                     "message": messages[0]
-#                 })
-
-#             return Response({
-#                 "error": {
-#                     "code": 400,
-#                     "message": _("입력값을 확인해주세요."),
-#                     "fields": errors
-#                 }
-#             }, status=status.HTTP_400_BAD_REQUEST)
-        
-#         except Exception as e:
-#             print(e)
-#             return Response({
-#                 "error": {
-#                     "code": 500,
-#                     "message": "서버 내 오류 발생 : " + str(e)
-#                 }
-#             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-
-
-
+# 게시글 생성
 class PostCreate(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        # 오류방지용
-        if request.data['media'] == []:
-            return Response(status=200)
         media_list = image_upload(request)
         serializer = PostCreateSerializer(data=request.data)
 
-
         try:
-            if serializer.is_valid():
-                post = serializer.save(user=request.user)  # Pass the user from the request
+            if serializer.is_valid(raise_exception=True):
+                post = serializer.save(user=request.user) # 유저 정보 담기
+
                 if media_list:
                     for media_url in media_list:
                         Media.objects.create(file_url=media_url, post=Post.objects.get(id=post.id))
@@ -200,71 +133,12 @@ class PostCreate(APIView):
             }, status=status.HTTP_400_BAD_REQUEST)
         
         except Exception as e:
-            print(e)
             return Response({
                 "error": {
                     "code": 500,
                     "message": "서버 내 오류 발생 : " + str(e)
                 }
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-
-
-
-
-# class PostCreate(APIView):
-#     permission_classes = [IsAuthenticated]
-
-#     def post(self, request):
-#         media_list = image_upload(request)
-#         serializer = PostCreateSerializer(data=request.data)
-
-        
-
-#         try:
-#             if serializer.is_valid():
-#                 post = serializer.save(user=request.user)  # Pass the user from the request
-
-#                 # if media_list:
-#                 #     for media_url in media_list:
-#                 #         Media.objects.create(file_url=media_url, post=Post.objects.get(id=post.id))
-
-#                 return Response({
-#                     "success": True,
-#                     "code": 201,
-#                     "id": post.id,
-#                     "content": post.content,
-#                     "message": "게시글 생성 성공",
-#                     "data": serializer.data
-#                 }, status=status.HTTP_201_CREATED)
-            
-#         except ValidationError as e:
-#             errors = []
-#             for field, messages in e.detail.items():
-#                 errors.append({
-#                     "field": field,
-#                     "message": messages[0]
-#                 })
-
-#             return Response({
-#                 "error": {
-#                     "code": 400,
-#                     "message": _("입력값을 확인해주세요."),
-#                     "fields": errors
-#                 }
-#             }, status=status.HTTP_400_BAD_REQUEST)
-        
-#         except Exception as e:
-#             print(e)
-#             return Response({
-#                 "error": {
-#                     "code": 500,
-#                     "message": "서버 내 오류 발생 : " + str(e)
-#                 }
-#             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-
-
 
 
 # 특정 게시글 상세 조회
@@ -274,7 +148,18 @@ class PostDetail(APIView):
     def get(self, request, post_id):
         try:
             post_obj = Post.objects.get(pk=post_id)
+
+            # visible이 False일 때 현재 사용자가 해당 게시글의 작성자가 아닌 경우, 게시글 조회 불가능
+            if not post_obj.visible and post_obj.user != request.user:
+                return Response({
+                    "error": {
+                        "code": 403,
+                        "message": "해당 게시글은 비공개 상태입니다."
+                    }
+                }, status=status.HTTP_403_FORBIDDEN)
+            
             serializer = PostDetailSerializer(post_obj)
+
             return Response({
                 "success": True,
                 "code": 200,
@@ -312,12 +197,24 @@ class PostUpdate(APIView):
                         "message": "해당 작업을 수행할 권한이 없습니다."
                     }
                 }, status=status.HTTP_403_FORBIDDEN)
-            
-            request_body = request.data
-            serializer = PostDetailSerializer(post_obj, data=request_body)
+
+            serializer = PostCreateSerializer(post_obj, data=request.data)
 
             if serializer.is_valid(raise_exception=True):
-                serializer.save()
+                post = serializer.save()
+                media_list = image_upload(request)
+
+                # 미디어 수정
+                if media_list:
+                    for media_url in media_list:
+                        # 미디어가 리스트에 없으면 생성 (수정 시 이미지 추가)
+                        media, created = Media.objects.get_or_create(file_url=media_url)
+                        post.media_set.add(media)
+
+                    for media in post.media_set.all():
+                        # DB에 파일이 리스트에 없으면 재거 (수정 시 이미지 제거)
+                        if media.file_url not in media_list:
+                            post.media_set.remove(media)
 
                 return Response({
                     "success": True,
@@ -325,7 +222,7 @@ class PostUpdate(APIView):
                     "message": "게시글 수정 성공",
                     "data": serializer.data
                 }, status=status.HTTP_200_OK)
-            
+        
         except ValidationError as e:
             errors = []
             for field, messages in e.detail.items():
@@ -367,13 +264,14 @@ class PostDelete(APIView):
                     }
                 }, status=status.HTTP_403_FORBIDDEN)
 
-            post_obj.delete()
+            if post_obj.user == request.user:
+                post_obj.delete()
 
-            return Response({
-                "success": True,
-                "code": 200,
-                "message": "게시글 삭제 성공"
-            }, status=status.HTTP_200_OK)
+                return Response({
+                    "success": True,
+                    "code": 200,
+                    "message": "게시글 삭제 성공"
+                }, status=status.HTTP_200_OK)
 
         except Exception as e:
             return Response({
@@ -389,7 +287,7 @@ def image_upload(request):
     # Base64로 인코딩된 이미지 데이터 리스트 추출
     base64_strings = request.data.get('media')
     if not base64_strings:
-        return Response({"error": "No image data provided"}, status=400)
+        return []
     
     # S3 Configuration
     service_name = 's3'
@@ -432,5 +330,3 @@ def image_upload(request):
 
     print(uploaded_files)
     return uploaded_files
-
-
