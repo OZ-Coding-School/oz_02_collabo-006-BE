@@ -282,12 +282,11 @@ class PostDelete(APIView):
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
 
-
 def image_upload(request):
     # Base64로 인코딩된 이미지 데이터 리스트 추출
     base64_strings = request.data.get('media')
     if not base64_strings:
-        return []
+        return Response({"error": "No images provided"}, status=400)
     
     # S3 Configuration
     service_name = 's3'
