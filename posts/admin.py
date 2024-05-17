@@ -11,7 +11,6 @@ class PostAdmin(admin.ModelAdmin):
 class HashtagPostAdmin(admin.ModelAdmin):
     pass
 
-
 @admin.register(Like)
 class LikeAdmin(admin.ModelAdmin):
     pass
