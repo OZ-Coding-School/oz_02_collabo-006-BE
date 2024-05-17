@@ -110,25 +110,39 @@ class UserUpdateAPIView(APIView):
             )
 
 
-
 class LoginAPIView(APIView):
     def post(self, request, *args, **kwargs):
         username = request.data.get('username')
         password = request.data.get('password')
         user = authenticate(username=username, password=password)
-
+        
         if user is not None:
             refresh = RefreshToken.for_user(user)
 
             # 액세스 토큰과 함께 리프레쉬 토큰을 쿠키에 설정
             response = Response({
-                'access': str(refresh.access_token),
+                'accessToken': str(refresh.access_token),
+                'refreshToken': str(refresh),
             })
-            response.set_cookie("access_token", refresh, httponly=False)
+            response.set_cookie(
+                key='access_token', 
+                value=str(refresh.access_token), 
+                httponly=True, 
+                secure=True, 
+                samesite='None'
+            )
+            response.set_cookie(
+                key='refresh_token', 
+                value=str(refresh), 
+                httponly=True, 
+                secure=True, 
+                samesite='None'
+            )
 
             return response
         else:
             return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+
 
 
 class UserDetailView(APIView):
