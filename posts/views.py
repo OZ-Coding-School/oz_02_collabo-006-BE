@@ -299,6 +299,7 @@ class PostDelete(APIView):
                 }
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+
 # 게시글 좋아요     
 class PostLike(APIView):
     permission_classes = [IsAuthenticated]
@@ -359,7 +360,7 @@ class PostLike(APIView):
                 }
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
-# 이미지 업로드
+
 def image_upload(request):
     # Base64로 인코딩된 이미지 데이터 리스트 추출
     base64_strings = request.data.get('media')
