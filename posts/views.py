@@ -283,6 +283,7 @@ class PostDelete(APIView):
                 }, status=status.HTTP_403_FORBIDDEN)
 
             if post_obj.user == request.user:
+                image_delete(post_id)
                 post_obj.delete()
 
                 return Response({
@@ -410,3 +411,25 @@ def image_upload(request):
     return uploaded_files
 
 
+# 이미지 삭제
+def image_delete(post_id):
+    # S3 Configuration
+    service_name = 's3'
+    endpoint_url = 'https://kr.object.ncloudstorage.com/'
+    access_key = CONF['ncp']['access']
+    secret_key = CONF['ncp']['secret']
+    bucket_name = 'oz-nediple'
+
+    # boto3 클라이언트 설정
+    s3 = boto3.client(
+        service_name, endpoint_url=endpoint_url,
+        aws_access_key_id=access_key, aws_secret_access_key=secret_key
+    )
+
+    media_objects = Media.objects.filter(post_id=post_id)
+    for media_url in media_objects:
+        delete_object = str(media_url.file_url).split('https://kr.object.ncloudstorage.com/oz-nediple/')[1]
+        s3.delete_object(Bucket=bucket_name, Key=delete_object)
+    # response = s3.list_objects(Bucket=bucket_name, MaxKeys=300)
+
+    return
