@@ -1,5 +1,5 @@
 from rest_framework.serializers import ModelSerializer
-from .models import Post, HashtagPost
+from .models import Post, HashtagPost, Like
 from users.serializers import UserSerializer
 from comments.serializers import CommentSerializer
 from medias.serializers import MediaSerializer
@@ -98,6 +98,28 @@ class PostCreateSerializer(ModelSerializer):
         instance.save()
 
         return instance
-    
+
+# 좋아요 시리얼라이즈 -> 좋아요 생성
+class LikeSerializer(ModelSerializer):
+    user_id = serializers.PrimaryKeyRelatedField(source='user', queryset=Post.objects.all())
+    post_id = serializers.PrimaryKeyRelatedField(source='post', queryset=Post.objects.all())
+
+    class Meta:
+        model = Like 
+        fields = ['id', 'user_id', 'post_id', 'created_at', 'updated_at']
 
 
+
+    # def create(self, validated_data):
+    #     return Like.objects.create(**validated_data)
+
+# # 게시글 좋아요 시리얼라이즈 -> 게시글 좋아요 수
+# class PostLikeSerializer(ModelSerializer):
+#     class Meta:
+#         model = Post
+#         fields = ['likes']
+
+#     def update(self, instance, validated_data):
+#         instance.likes = validated_data.get('likes', instance.likes)
+#         instance.save()
+#         return instance
