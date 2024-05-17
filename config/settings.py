@@ -209,7 +209,7 @@ REST_FRAMEWORK = {
 
 SIMPLE_JWT = {
     # 액세스 토큰의 유효 기간을 5분으로 설정합니다.
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=5),
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=600),
     # 리프레시 토큰의 유효 기간을 1일로 설정합니다.
     "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
     # 리프레시 토큰을 갱신할 때마다 새 토큰을 생성하지 않도록 설정합니다.
