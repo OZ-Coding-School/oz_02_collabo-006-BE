@@ -5,7 +5,7 @@ from .views import (
     PostCreate, 
     PostDetail, 
     PostUpdate, 
-    PostDelete
+    PostDelete,
     )
 
 urlpatterns = [

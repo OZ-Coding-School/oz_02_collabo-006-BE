@@ -2,10 +2,15 @@ from django.shortcuts import get_object_or_404
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .models import Post
+from .models import Post, Like
 from users.models import User
 from medias.models import Media
-from .serializers import PostListSerializer, PostDetailSerializer, PostCreateSerializer
+from .serializers import (
+    PostListSerializer, 
+    PostDetailSerializer, 
+    PostCreateSerializer,
+    LikeSerializer
+)
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
@@ -23,35 +28,45 @@ CONF.read('config.ini')
 
 
 # 전체 게시글 조회
-# 게시글 공개 여부가 True인 것만 공개 + 24씩 보내주기 + 카테고리 new 필드로 불렀을 때 created_at 최신순으로
 class PostList(APIView):
     permission_classes = [AllowAny] # 인증여부 상관없이 허용
 
     def get(self, request):
         try:
-            # 정렬을 위해 'sort' 매개변수 값 가져오기, 기본값은 'new'
-            sort = request.GET.get('sort', 'new')
+            # 정렬을 위해 'sort' 매개변수 값 가져오기
+            sort = request.GET.get('sort','new')
+            # 디폴트 페이지값 : '1' -> 정수형으로 변환
+            page = int(request.GET.get('page', '1'))
+            page_size = 12  # 페이지당 게시글 수
+
             # 만약 'sort'가 'new'일 경우
             if sort == 'new':
                 # visible(게시글 공개 여부)이 True인 post를 최신순으로 24개씩 가져오기
                 posts = Post.objects.filter(visible=True).order_by('-created_at')[:24]
-
-                # 페이징
-                page = int(request.GET.get('page', '1')) # 디폴트 페이지값 : '1' -> 정수형으로 변환
-                paginator = Paginator(posts, 12) # 한 페이지당 12개씩 보여주기
-                page_obj = paginator.get_page(page) # 요청된 페이지 번호에 해당하는 게시글 가져오기
-
-                # 페이지에 해당하는 게시글 시리얼라이즈
-                serializer = PostListSerializer(page_obj, many=True)
-
+            # 만약 'sort'가 'trending'일 경우
+            elif sort == 'trending':
+                # visible(게시글 공개 여부)이 True인 post를 좋아요순으로 24개씩 가져오기
+                posts = Post.objects.filter(visible=True).order_by('-likes')[:24]
+            else:
                 return Response({
-                    "success": True,
-                    "code": 200,
-                    "message": "전체 게시글 조회 성공",
-                    "data": serializer.data,
-                    "current_page": page_obj.number, # 현재 페이지
-                    "total_pages": paginator.num_pages # 총 페이지
-                }, status=status.HTTP_200_OK)
+                    "error": {
+                        "code": 400,
+                        "message": "유효하지 않은 정렬 매개변수"
+                    }
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+            paginator = Paginator(posts, page_size)
+            page_obj = paginator.get_page(page) # 요청된 페이지 번호에 해당하는 게시글 가져오기
+            serializer = PostListSerializer(page_obj, many=True) # 페이지에 해당하는 게시글 시리얼라이즈
+            
+            return Response({
+                "success": True,
+                "code": 200,
+                "message": "전체 게시글 조회 성공",
+                "data": serializer.data,
+                "current_page": page_obj.number, # 현재 페이지
+                "total_pages": paginator.num_pages # 총 페이지
+            }, status=status.HTTP_200_OK)
 
         except Exception as e: # 기타 예외 발생
             return Response({
@@ -92,7 +107,10 @@ class PostUser(APIView):
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 # 게시글 생성
+from rest_framework_simplejwt.authentication import JWTAuthentication
+
 class PostCreate(APIView):
+    authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
@@ -115,7 +133,7 @@ class PostCreate(APIView):
                     "message": "게시글 생성 성공",
                     "data": serializer.data
                 }, status=status.HTTP_201_CREATED)
-            
+
         except ValidationError as e:
             errors = []
             for field, messages in e.detail.items():
@@ -131,7 +149,7 @@ class PostCreate(APIView):
                     "fields": errors
                 }
             }, status=status.HTTP_400_BAD_REQUEST)
-        
+
         except Exception as e:
             return Response({
                 "error": {
@@ -166,7 +184,7 @@ class PostDetail(APIView):
                 "message": "하나의 게시글 조회 성공",
                 "data": serializer.data
             }, status=status.HTTP_200_OK)
-        
+
         except Post.DoesNotExist:
             return Response({
                 "error": {
@@ -174,7 +192,7 @@ class PostDetail(APIView):
                     "message": "해당 ID의 게시글이 존재하지 않음"
                 }
             }, status=status.HTTP_404_NOT_FOUND)
-        
+
         except Exception as e:
             return Response({
                 "error": {
@@ -280,14 +298,74 @@ class PostDelete(APIView):
                     "message": "서버 내 오류 발생 : " + str(e)
                 }
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        
 
+
+# 게시글 좋아요     
+class PostLike(APIView):
+    permission_classes = [IsAuthenticated]
+
+    # 좋아요 개별 조회/리스트조회
+    def get(self, request):
+        try:
+            get_status = request.data.get("get_status")
+            # get_status가 True
+            if get_status == "True":
+                post_id = request.data.get("post_id")
+                # 현재 사용자와 게시글에 대한 좋아요 가져오기
+                like = Like.objects.filter(user=request.user, post_id=post_id)
+                if not like:
+                    return Response({"message":"unlike"}, status=200)
+
+                return Response({"post_id": like[0].post.id}, status=status.HTTP_200_OK)
+            # get_status가 Fasle일 경우, 리스트 조회
+            else:
+                post_likes = Like.objects.filter(user=request.user)
+                serializer = LikeSerializer(post_likes, many=True)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            return Response({
+                "error": {
+                    "code": 500,
+                    "message": "서버 내 오류 발생 : " + str(e)
+                }
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    # 좋아요 생성 및 취소
+    def post(self, request):
+        try:
+            post_id = request.data.get("post_id")
+            post_id = Post.objects.get(id=post_id)
+            user_obj = User.objects.get(username=request.user)
+            existing_like = Like.objects.filter(user=user_obj, post=post_id)
+            # 현재 좋아요가 되어있을 때, 좋아요 하면 취소
+            if existing_like.exists():
+                existing_like.delete()
+                post_id.likes -= 1
+                post_id.save()
+                return Response({"message": "좋아요 취소"}, status=status.HTTP_200_OK)
+            # 현재 좋아요가 안 되어있을 때, 좋아요 생성
+            else:
+                like = Like.objects.create(user=user_obj, post=post_id)
+                like.save()
+                post_id.likes += 1
+                post_id.save()
+                return Response({"message": "좋아요 생성"},status=status.HTTP_201_CREATED)
+                
+        except Exception as e:
+            return Response({
+                "error": {
+                    "code": 500,
+                    "message": "서버 내 오류 발생 : " + str(e)
+                }
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
 
 def image_upload(request):
     # Base64로 인코딩된 이미지 데이터 리스트 추출
     base64_strings = request.data.get('media')
     if not base64_strings:
-        return []
+        return Response({"error": "No images provided"}, status=400)
     
     # S3 Configuration
     service_name = 's3'
@@ -330,3 +408,5 @@ def image_upload(request):
 
     print(uploaded_files)
     return uploaded_files
+
+
