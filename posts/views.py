@@ -9,7 +9,7 @@ from .serializers import (
     PostListSerializer, 
     PostDetailSerializer, 
     PostCreateSerializer,
-    LikeSerializer
+    PostLikeSerializer
 )
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.exceptions import ValidationError
@@ -321,7 +321,7 @@ class PostLike(APIView):
             # get_status가 Fasle일 경우, 리스트 조회
             else:
                 post_likes = Like.objects.filter(user=request.user)
-                serializer = LikeSerializer(post_likes, many=True)
+                serializer = PostLikeSerializer(post_likes, many=True)
                 return Response(serializer.data, status=status.HTTP_200_OK)
             
         except Exception as e:

@@ -101,7 +101,7 @@ class PostCreateSerializer(ModelSerializer):
         return instance
 
 # 좋아요 시리얼라이즈 -> 좋아요 생성
-class LikeSerializer(ModelSerializer):
+class PostLikeSerializer(ModelSerializer):
     user_id = serializers.PrimaryKeyRelatedField(source='user', queryset=User.objects.all())
     post_id = serializers.PrimaryKeyRelatedField(source='post', queryset=Post.objects.all())
 
