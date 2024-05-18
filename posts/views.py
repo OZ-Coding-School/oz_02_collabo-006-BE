@@ -2,7 +2,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .models import Post, Like
+from .models import Post, PostLike
 from users.models import User
 from medias.models import Media
 from .serializers import (
@@ -313,14 +313,14 @@ class PostLike(APIView):
             if get_status == "True":
                 post_id = request.data.get("post_id")
                 # 현재 사용자와 게시글에 대한 좋아요 가져오기
-                like = Like.objects.filter(user=request.user, post_id=post_id)
-                if not like:
+                post_like = PostLike.objects.filter(user=request.user, post_id=post_id)
+                if not post_like:
                     return Response({"message":"unlike"}, status=200)
 
-                return Response({"post_id": like[0].post.id}, status=status.HTTP_200_OK)
+                return Response({"post_id": post_like[0].post.id}, status=status.HTTP_200_OK)
             # get_status가 Fasle일 경우, 리스트 조회
             else:
-                post_likes = Like.objects.filter(user=request.user)
+                post_likes = PostLike.objects.filter(user=request.user)
                 serializer = PostLikeSerializer(post_likes, many=True)
                 return Response(serializer.data, status=status.HTTP_200_OK)
             
@@ -338,7 +338,7 @@ class PostLike(APIView):
             post_id = request.data.get("post_id")
             post_id = Post.objects.get(id=post_id)
             user_obj = User.objects.get(username=request.user)
-            existing_like = Like.objects.filter(user=user_obj, post=post_id)
+            existing_like = PostLike.objects.filter(user=user_obj, post=post_id)
             # 현재 좋아요가 되어있을 때, 좋아요 하면 취소
             if existing_like.exists():
                 existing_like.delete()
@@ -347,7 +347,7 @@ class PostLike(APIView):
                 return Response({"message": "좋아요 취소"}, status=status.HTTP_200_OK)
             # 현재 좋아요가 안 되어있을 때, 좋아요 생성
             else:
-                like = Like.objects.create(user=user_obj, post=post_id)
+                like = PostLike.objects.create(user=user_obj, post=post_id)
                 like.save()
                 post_id.likes += 1
                 post_id.save()

@@ -22,3 +22,16 @@ class Comment(CommonModel):
 
     def __str__(self):
         return self.content
+    
+# 댓글 좋아요 테이블
+class CommentLike(CommonModel):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    comment = models.ForeignKey(Comment, on_delete=models.CASCADE)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['user', 'comment'], name='unique_user_comment')
+        ]

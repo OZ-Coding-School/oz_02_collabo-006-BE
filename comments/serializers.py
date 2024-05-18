@@ -1,8 +1,8 @@
 from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer
-from .models import Comment
+from .models import Comment, CommentLike
 from users.models import User
-from posts.models import Post, Like
+from posts.models import Post
 
 class CommentSerializer(ModelSerializer):
     replies = serializers.SerializerMethodField()
@@ -28,3 +28,12 @@ class CommentCreateSerializer(ModelSerializer):
         extra_kwargs = {
             'parent_comment': {'required': False}
         }
+
+# 좋아요 시리얼라이즈 -> 좋아요 생성
+class PostLikeSerializer(ModelSerializer):
+    user_id = serializers.PrimaryKeyRelatedField(source='user', queryset=User.objects.all())
+    comment_id = serializers.PrimaryKeyRelatedField(source='comment', queryset=Comment.objects.all())
+
+    class Meta:
+        model = CommentLike 
+        fields = ['id', 'user_id', 'comment_id', 'created_at', 'updated_at']
