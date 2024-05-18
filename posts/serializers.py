@@ -1,5 +1,6 @@
 from rest_framework.serializers import ModelSerializer
 from .models import Post, HashtagPost, Like
+from users.models import User
 from users.serializers import UserSerializer
 from comments.serializers import CommentSerializer
 from medias.serializers import MediaSerializer
@@ -101,7 +102,7 @@ class PostCreateSerializer(ModelSerializer):
 
 # 좋아요 시리얼라이즈 -> 좋아요 생성
 class LikeSerializer(ModelSerializer):
-    user_id = serializers.PrimaryKeyRelatedField(source='user', queryset=Post.objects.all())
+    user_id = serializers.PrimaryKeyRelatedField(source='user', queryset=User.objects.all())
     post_id = serializers.PrimaryKeyRelatedField(source='post', queryset=Post.objects.all())
 
     class Meta:
