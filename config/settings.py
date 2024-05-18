@@ -2,6 +2,11 @@ from datetime import timedelta
 from pathlib import Path
 import platform
 
+import configparser
+
+CONF = configparser.ConfigParser()
+CONF.read("config.ini")
+
 
 # 개발환경과 서버환경 구분을 위한 변수
 platform_index = platform.system()
@@ -134,6 +139,16 @@ if platform_index == "Linux":
         }
     }
 else:
+    # DATABASES = {
+    #     "default": {
+    #         "ENGINE": "django.db.backends.mysql",
+    #         "NAME": CONF["mysql"]["DB_NAME"],
+    #         "USER": CONF["mysql"]["DB_USER"],
+    #         "PASSWORD": CONF["mysql"]["DB_PASS"],
+    #         "HOST": CONF["mysql"]["BD_HOST"],
+    #         "PORT": CONF["mysql"]["BD_PORT"],
+    #     }
+    # }
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.sqlite3",

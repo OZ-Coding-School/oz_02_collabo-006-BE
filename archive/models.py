@@ -1,23 +1,29 @@
+# archive/models.py
 from django.db import models
 from users.models import User
 from common.models import CommonModel
 from posts.models import Post
 
-
-
-class Archive(CommonModel):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='archives')
-    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='archived_in')
-    archive_name = models.CharField(max_length=8)
-    description = models.TextField()
-
-    def __str__(self):
-        return self.archive_name
-
-class ArchiveStatus(models.Model):
-    archive = models.OneToOneField(Archive, on_delete=models.CASCADE, related_name='status')
+class ArchiveStatus(CommonModel):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='archive_status')
     current_archive_count = models.IntegerField(default=0)
     max_archive_count = models.IntegerField(default=4)
 
     def __str__(self):
-        return f"{self.archive.archive_name} status"
+        return f"{self.user.username} status"
+
+class Archive(CommonModel):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='archives')
+    archive_name = models.CharField(max_length=8)
+    description = models.TextField(default="")
+    status = models.ForeignKey(ArchiveStatus, on_delete=models.CASCADE, related_name='archives')
+
+    def __str__(self):
+        return self.archive_name
+
+class ArchivePost(CommonModel):
+    archive = models.ForeignKey(Archive, on_delete=models.CASCADE, related_name='archive_posts')
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='archive_posts')
+
+    def __str__(self):
+        return f"Archive: {self.archive.archive_name}, Post: {self.post.id}"

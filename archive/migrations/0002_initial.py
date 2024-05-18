@@ -9,14 +9,14 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('comments', '0001_initial'),
+        ('archive', '0001_initial'),
         ('posts', '0001_initial'),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='comment',
+            model_name='archive',
             name='post',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='posts.post'),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='archived_in', to='posts.post'),
         ),
     ]
