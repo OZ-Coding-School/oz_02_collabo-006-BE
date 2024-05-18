@@ -109,11 +109,6 @@ class PostLikeSerializer(ModelSerializer):
         model = PostLike 
         fields = ['id', 'user_id', 'post_id', 'created_at', 'updated_at']
 
-
-
-    # def create(self, validated_data):
-    #     return Like.objects.create(**validated_data)
-
 # # 게시글 좋아요 시리얼라이즈 -> 게시글 좋아요 수
 # class PostLikeSerializer(ModelSerializer):
 #     class Meta:

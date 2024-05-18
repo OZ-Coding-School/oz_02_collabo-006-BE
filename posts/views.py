@@ -302,13 +302,14 @@ class PostDelete(APIView):
 
 
 # 게시글 좋아요     
-class PostLike(APIView):
+class PostLikeView(APIView):
     permission_classes = [IsAuthenticated]
 
     # 좋아요 개별 조회/리스트조회
     def get(self, request):
         try:
             get_status = request.data.get("get_status")
+            print("get_status", get_status)
             # get_status가 True
             if get_status == "True":
                 post_id = request.data.get("post_id")
