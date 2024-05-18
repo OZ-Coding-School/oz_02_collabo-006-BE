@@ -1,7 +1,6 @@
 from django.db import models
 from common.models import CommonModel
 from users.models import User
-from comments.models import Comment
 from hashtags.models import Hashtag
 
 # 게시글 테이블
@@ -33,16 +32,15 @@ class HashtagPost(CommonModel):
     class Meta:
         db_table = 'hashtag_post'
 
-# 좋아요 테이블
-class Like(CommonModel):
+# 게시글 좋아요 테이블
+class PostLike(CommonModel):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    post = models.ForeignKey(Post, on_delete=models.CASCADE) # 게시글 좋아요
-    comment = models.ForeignKey(Comment, on_delete=models.CASCADE) # 댓글 좋아요
+    post = models.ForeignKey(Post, on_delete=models.CASCADE)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         constraints = [
-            models.UniqueConstraint(fields=['user', 'post', 'comment'], name='unique_user_post_comment')
+            models.UniqueConstraint(fields=['user', 'post'], name='unique_user_post')
         ]

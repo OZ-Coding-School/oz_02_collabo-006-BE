@@ -2,7 +2,7 @@ from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer
 from .models import Comment
 from users.models import User
-from posts.models import Post
+from posts.models import Post, Like
 
 class CommentSerializer(ModelSerializer):
     replies = serializers.SerializerMethodField()

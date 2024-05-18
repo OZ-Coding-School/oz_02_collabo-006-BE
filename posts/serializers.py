@@ -1,5 +1,5 @@
 from rest_framework.serializers import ModelSerializer
-from .models import Post, HashtagPost, Like
+from .models import Post, HashtagPost, PostLike
 from users.models import User
 from users.serializers import UserSerializer
 from comments.serializers import CommentSerializer
@@ -106,7 +106,7 @@ class PostLikeSerializer(ModelSerializer):
     post_id = serializers.PrimaryKeyRelatedField(source='post', queryset=Post.objects.all())
 
     class Meta:
-        model = Like 
+        model = PostLike 
         fields = ['id', 'user_id', 'post_id', 'created_at', 'updated_at']
 
 
