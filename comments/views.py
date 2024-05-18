@@ -2,11 +2,11 @@ from django.shortcuts import get_object_or_404
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .models import Comment
+from .models import Comment, CommentLike
 from posts.models import Post
-from .serializers import CommentCreateSerializer, CommentSerializer
+from users.models import User
+from .serializers import CommentCreateSerializer, CommentSerializer, CommentLikeSerializer
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 from django.core.paginator import Paginator
 
@@ -159,6 +159,62 @@ class CommentDelete(APIView):
                     "message": "댓글 삭제 성공"
                 }, status=status.HTTP_200_OK)
 
+        except Exception as e:
+            return Response({
+                "error": {
+                    "code": 500,
+                    "message": "서버 내 오류 발생 : " + str(e)
+                }
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class CommentLikeView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    # 좋아요 개별 조회/리스트조회
+    def get(self, request):
+        try:
+            get_status = request.data.get("get_status")
+            
+            if get_status == "True":
+                comment_id = request.data.get("comment_id")
+                comment_like = CommentLike.objects.filter(user=request.user, comment_id=comment_id)
+                if not comment_like:
+                    return Response({"message":"unlike"}, status=200)
+                return Response({"comment_id": comment_like[0].comment.id}, status=status.HTTP_200_OK)
+            else:
+                comment_likes = CommentLike.objects.filter(user=request.user)
+                serializer = CommentLikeSerializer(comment_likes, many=True)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            return Response({
+                "error": {
+                    "code": 500,
+                    "message": "서버 내 오류 발생 : " + str(e)
+                }
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    # 좋아요 생성 및 취소
+    def post(self, request):
+        try:
+            comment_id = request.data.get("comment_id")
+            comment_obj = Comment.objects.get(id=comment_id)
+            user_obj = User.objects.get(username=request.user)
+            existing_like = CommentLike.objects.filter(user=user_obj, comment=comment_obj)
+            # 현재 좋아요가 되어있을 때, 좋아요 하면 취소
+            if existing_like.exists():
+                existing_like.delete()
+                comment_obj.likes -= 1
+                comment_obj.save()
+                return Response({"message": "좋아요 취소"}, status=status.HTTP_200_OK)
+            # 현재 좋아요가 안 되어있을 때, 좋아요 생성
+            else:
+                comment_like = CommentLike.objects.create(user=user_obj, comment=comment_obj)
+                comment_like.save()
+                comment_obj.likes += 1
+                comment_obj.save()
+                return Response({"message": "좋아요 생성"},status=status.HTTP_201_CREATED)
+                
         except Exception as e:
             return Response({
                 "error": {

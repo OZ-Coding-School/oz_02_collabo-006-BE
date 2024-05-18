@@ -30,7 +30,7 @@ class CommentCreateSerializer(ModelSerializer):
         }
 
 # 좋아요 시리얼라이즈 -> 좋아요 생성
-class PostLikeSerializer(ModelSerializer):
+class CommentLikeSerializer(ModelSerializer):
     user_id = serializers.PrimaryKeyRelatedField(source='user', queryset=User.objects.all())
     comment_id = serializers.PrimaryKeyRelatedField(source='comment', queryset=Comment.objects.all())
 
