@@ -6,8 +6,8 @@ from users.models import User
 class Comment(CommonModel):
     content = models.TextField()
 
-    # 대댓글를 위한 칼럼
-    parent_comment = models.ForeignKey('self', on_delete=models.CASCADE, null=True)
+    # 대댓글을 위한 칼럼 -> 상위 댓글이 삭제되어도 대댓글은 유지
+    parent_comment = models.ForeignKey('self', on_delete=models.SET_NULL, null=True)
 
     # Post:Comment => 1:N
     post = models.ForeignKey(Post, on_delete=models.CASCADE)

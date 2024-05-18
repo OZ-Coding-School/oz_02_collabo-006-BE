@@ -3,12 +3,18 @@ from rest_framework.serializers import ModelSerializer
 from .models import Comment
 from users.models import User
 from posts.models import Post
-from users.serializers import UserSerializer
 
 class CommentSerializer(ModelSerializer):
+    replies = serializers.SerializerMethodField()
+
     class Meta:
         model = Comment
-        fields = '__all__'
+        fields = ['id', 'content', 'created_at', 'updated_at', 'parent_comment', 'post', 'user', 'replies']
+
+    def get_replies(self, obj):
+        replies = Comment.objects.filter(parent_comment=obj).order_by('created_at')
+        serializer = CommentSerializer(replies, many=True)
+        return serializer.data
 
 class CommentCreateSerializer(ModelSerializer):
     user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), required=False)
