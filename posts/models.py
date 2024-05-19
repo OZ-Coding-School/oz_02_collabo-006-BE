@@ -32,8 +32,8 @@ class HashtagPost(CommonModel):
     class Meta:
         db_table = 'hashtag_post'
 
-# 좋아요 테이블
-class Like(CommonModel):
+# 게시글 좋아요 테이블
+class PostLike(CommonModel):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     post = models.ForeignKey(Post, on_delete=models.CASCADE)
 

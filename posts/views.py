@@ -2,14 +2,14 @@ from django.shortcuts import get_object_or_404
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .models import Post, Like
+from .models import Post, PostLike
 from users.models import User
 from medias.models import Media
 from .serializers import (
     PostListSerializer, 
     PostDetailSerializer, 
     PostCreateSerializer,
-    LikeSerializer
+    PostLikeSerializer
 )
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.exceptions import ValidationError
@@ -29,8 +29,6 @@ CONF.read('config.ini')
 
 # 전체 게시글 조회
 class PostList(APIView):
-    permission_classes = [AllowAny] # 인증여부 상관없이 허용
-
     def get(self, request):
         try:
             # 정렬을 위해 'sort' 매개변수 값 가져오기
@@ -224,15 +222,20 @@ class PostUpdate(APIView):
 
                 # 미디어 수정
                 if media_list:
+                    # 현재 게시글에 연결된 미디어 URL 가져오기
+                    current_media_urls = post.media_set.values_list('file_url', flat=True)
+                    
+                    # 새로 들어온 이미지 추가
                     for media_url in media_list:
-                        # 미디어가 리스트에 없으면 생성 (수정 시 이미지 추가)
-                        media, created = Media.objects.get_or_create(file_url=media_url)
-                        post.media_set.add(media)
+                        if media_url not in current_media_urls:
+                            media, created = Media.objects.get_or_create(file_url=media_url, post=Post.objects.get(id=post.id))
+                            post.media_set.add(media)
 
+                    # 현재 미디어 중 새 미디어 리스트에 없는 건 삭제
                     for media in post.media_set.all():
-                        # DB에 파일이 리스트에 없으면 재거 (수정 시 이미지 제거)
                         if media.file_url not in media_list:
-                            post.media_set.remove(media)
+                            image_delete_single(media.file_url)  # S3에서 이미지 삭제
+                            media.delete()  # 데이터베이스에서 이미지 삭제
 
                 return Response({
                     "success": True,
@@ -302,26 +305,27 @@ class PostDelete(APIView):
 
 
 # 게시글 좋아요     
-class PostLike(APIView):
+class PostLikeView(APIView):
     permission_classes = [IsAuthenticated]
 
     # 좋아요 개별 조회/리스트조회
     def get(self, request):
         try:
             get_status = request.data.get("get_status")
+            print("get_status", get_status)
             # get_status가 True
             if get_status == "True":
                 post_id = request.data.get("post_id")
                 # 현재 사용자와 게시글에 대한 좋아요 가져오기
-                like = Like.objects.filter(user=request.user, post_id=post_id)
-                if not like:
-                    return Response({"message":"unlike"}, status=200)
+                post_like = PostLike.objects.filter(user=request.user, post_id=post_id)
+                if not post_like:
+                    return Response({"message": "unlike"}, status=200)
 
-                return Response({"post_id": like[0].post.id}, status=status.HTTP_200_OK)
+                return Response({"post_id": post_like[0].post.id, "message": "like"}, status=status.HTTP_200_OK)
             # get_status가 Fasle일 경우, 리스트 조회
             else:
-                post_likes = Like.objects.filter(user=request.user)
-                serializer = LikeSerializer(post_likes, many=True)
+                post_likes = PostLike.objects.filter(user=request.user)
+                serializer = PostLikeSerializer(post_likes, many=True)
                 return Response(serializer.data, status=status.HTTP_200_OK)
             
         except Exception as e:
@@ -338,7 +342,7 @@ class PostLike(APIView):
             post_id = request.data.get("post_id")
             post_id = Post.objects.get(id=post_id)
             user_obj = User.objects.get(username=request.user)
-            existing_like = Like.objects.filter(user=user_obj, post=post_id)
+            existing_like = PostLike.objects.filter(user=user_obj, post=post_id)
             # 현재 좋아요가 되어있을 때, 좋아요 하면 취소
             if existing_like.exists():
                 existing_like.delete()
@@ -347,7 +351,7 @@ class PostLike(APIView):
                 return Response({"message": "좋아요 취소"}, status=status.HTTP_200_OK)
             # 현재 좋아요가 안 되어있을 때, 좋아요 생성
             else:
-                like = Like.objects.create(user=user_obj, post=post_id)
+                like = PostLike.objects.create(user=user_obj, post=post_id)
                 like.save()
                 post_id.likes += 1
                 post_id.save()
@@ -411,7 +415,7 @@ def image_upload(request):
     return uploaded_files
 
 
-# 이미지 삭제
+# 게시글 삭제 시, 게시글 내 전체 이미지 삭제
 def image_delete(post_id):
     # S3 Configuration
     service_name = 's3'
@@ -431,5 +435,25 @@ def image_delete(post_id):
         delete_object = str(media_url.file_url).split('https://kr.object.ncloudstorage.com/oz-nediple/')[1]
         s3.delete_object(Bucket=bucket_name, Key=delete_object)
     # response = s3.list_objects(Bucket=bucket_name, MaxKeys=300)
+
+    return
+
+# 게시글 수정 시, 수정 후 없는 이미지 삭제
+def image_delete_single(file_url):
+    # S3 Configuration
+    service_name = 's3'
+    endpoint_url = 'https://kr.object.ncloudstorage.com/'
+    access_key = CONF['ncp']['access']
+    secret_key = CONF['ncp']['secret']
+    bucket_name = 'oz-nediple'
+
+    # boto3 클라이언트 설정
+    s3 = boto3.client(
+        service_name, endpoint_url=endpoint_url,
+        aws_access_key_id=access_key, aws_secret_access_key=secret_key
+    )
+
+    delete_object = str(file_url).split('https://kr.object.ncloudstorage.com/oz-nediple/')[1]
+    s3.delete_object(Bucket=bucket_name, Key=delete_object)
 
     return
