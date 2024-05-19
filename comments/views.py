@@ -179,8 +179,8 @@ class CommentLikeView(APIView):
                 comment_id = request.data.get("comment_id")
                 comment_like = CommentLike.objects.filter(user=request.user, comment_id=comment_id)
                 if not comment_like:
-                    return Response({"message":"unlike"}, status=200)
-                return Response({"comment_id": comment_like[0].comment.id}, status=status.HTTP_200_OK)
+                    return Response({"message": "unlike"}, status=200)
+                return Response({"comment_id": comment_like[0].comment.id, "message": "like"}, status=status.HTTP_200_OK)
             else:
                 comment_likes = CommentLike.objects.filter(user=request.user)
                 serializer = CommentLikeSerializer(comment_likes, many=True)

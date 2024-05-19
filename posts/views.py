@@ -319,9 +319,9 @@ class PostLikeView(APIView):
                 # 현재 사용자와 게시글에 대한 좋아요 가져오기
                 post_like = PostLike.objects.filter(user=request.user, post_id=post_id)
                 if not post_like:
-                    return Response({"message":"unlike"}, status=200)
+                    return Response({"message": "unlike"}, status=200)
 
-                return Response({"post_id": post_like[0].post.id}, status=status.HTTP_200_OK)
+                return Response({"post_id": post_like[0].post.id, "message": "like"}, status=status.HTTP_200_OK)
             # get_status가 Fasle일 경우, 리스트 조회
             else:
                 post_likes = PostLike.objects.filter(user=request.user)
