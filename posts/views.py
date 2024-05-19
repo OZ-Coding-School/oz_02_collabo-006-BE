@@ -29,8 +29,6 @@ CONF.read('config.ini')
 
 # 전체 게시글 조회
 class PostList(APIView):
-    permission_classes = [AllowAny] # 인증여부 상관없이 허용
-
     def get(self, request):
         try:
             # 정렬을 위해 'sort' 매개변수 값 가져오기
@@ -224,15 +222,20 @@ class PostUpdate(APIView):
 
                 # 미디어 수정
                 if media_list:
+                    # 현재 게시글에 연결된 미디어 URL 가져오기
+                    current_media_urls = post.media_set.values_list('file_url', flat=True)
+                    
+                    # 새로 들어온 이미지 추가
                     for media_url in media_list:
-                        # 미디어가 리스트에 없으면 생성 (수정 시 이미지 추가)
-                        media, created = Media.objects.get_or_create(file_url=media_url)
-                        post.media_set.add(media)
+                        if media_url not in current_media_urls:
+                            media, created = Media.objects.get_or_create(file_url=media_url, post=Post.objects.get(id=post.id))
+                            post.media_set.add(media)
 
+                    # 현재 미디어 중 새 미디어 리스트에 없는 건 삭제
                     for media in post.media_set.all():
-                        # DB에 파일이 리스트에 없으면 재거 (수정 시 이미지 제거)
                         if media.file_url not in media_list:
-                            post.media_set.remove(media)
+                            image_delete_single(media.file_url)  # S3에서 이미지 삭제
+                            media.delete()  # 데이터베이스에서 이미지 삭제
 
                 return Response({
                     "success": True,
@@ -412,7 +415,7 @@ def image_upload(request):
     return uploaded_files
 
 
-# 이미지 삭제
+# 게시글 삭제 시, 게시글 내 전체 이미지 삭제
 def image_delete(post_id):
     # S3 Configuration
     service_name = 's3'
@@ -432,5 +435,25 @@ def image_delete(post_id):
         delete_object = str(media_url.file_url).split('https://kr.object.ncloudstorage.com/oz-nediple/')[1]
         s3.delete_object(Bucket=bucket_name, Key=delete_object)
     # response = s3.list_objects(Bucket=bucket_name, MaxKeys=300)
+
+    return
+
+# 게시글 수정 시, 수정 후 없는 이미지 삭제
+def image_delete_single(file_url):
+    # S3 Configuration
+    service_name = 's3'
+    endpoint_url = 'https://kr.object.ncloudstorage.com/'
+    access_key = CONF['ncp']['access']
+    secret_key = CONF['ncp']['secret']
+    bucket_name = 'oz-nediple'
+
+    # boto3 클라이언트 설정
+    s3 = boto3.client(
+        service_name, endpoint_url=endpoint_url,
+        aws_access_key_id=access_key, aws_secret_access_key=secret_key
+    )
+
+    delete_object = str(file_url).split('https://kr.object.ncloudstorage.com/oz-nediple/')[1]
+    s3.delete_object(Bucket=bucket_name, Key=delete_object)
 
     return

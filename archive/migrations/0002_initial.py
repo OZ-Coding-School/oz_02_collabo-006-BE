@@ -9,53 +9,55 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ("follow", "0001_initial"),
+        ("archive", "0001_initial"),
+        ("posts", "0001_initial"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.AddField(
-            model_name="follower",
-            name="follower",
-            field=models.ForeignKey(
-                on_delete=django.db.models.deletion.CASCADE,
-                related_name="follower_to",
-                to=settings.AUTH_USER_MODEL,
-            ),
-        ),
-        migrations.AddField(
-            model_name="follower",
+            model_name="archive",
             name="user",
             field=models.ForeignKey(
                 on_delete=django.db.models.deletion.CASCADE,
-                related_name="follower_from",
+                related_name="archives",
                 to=settings.AUTH_USER_MODEL,
             ),
         ),
         migrations.AddField(
-            model_name="following",
-            name="following",
+            model_name="archivepost",
+            name="archive",
             field=models.ForeignKey(
                 on_delete=django.db.models.deletion.CASCADE,
-                related_name="following_to",
-                to=settings.AUTH_USER_MODEL,
+                related_name="archive_posts",
+                to="archive.archive",
             ),
         ),
         migrations.AddField(
-            model_name="following",
+            model_name="archivepost",
+            name="post",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="archive_posts",
+                to="posts.post",
+            ),
+        ),
+        migrations.AddField(
+            model_name="archivestatus",
             name="user",
-            field=models.ForeignKey(
+            field=models.OneToOneField(
                 on_delete=django.db.models.deletion.CASCADE,
-                related_name="following_from",
+                related_name="archive_status",
                 to=settings.AUTH_USER_MODEL,
             ),
         ),
-        migrations.AlterUniqueTogether(
-            name="follower",
-            unique_together={("user", "follower")},
-        ),
-        migrations.AlterUniqueTogether(
-            name="following",
-            unique_together={("user", "following")},
+        migrations.AddField(
+            model_name="archive",
+            name="status",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="archives",
+                to="archive.archivestatus",
+            ),
         ),
     ]
