@@ -4,13 +4,30 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.chrome.service import Service
 import time
 
+import configparser
+CONF = configparser.ConfigParser()
+CONF.read("../config.ini")
+
 # ChromeDriver 경로 설정 (실제 경로로 수정)
-chrome_driver_path = r'C:\Users\COM\Desktop\2024 django project\oz_02_collabo-006-BE\crawling\chromedriver.exe'  # ChromeDriver 경로 설정
+chrome_driver_path = r"chromedriver.exe"  # ChromeDriver 경로 설정
 service = Service(chrome_driver_path)
 
+
+instaIdList = [
+    "somi_art_official",
+    "ucm.nail",
+    "change_it_mk",
+    "riyu_nail",
+    "muyo_nail",
+    "clareo_nail",
+    "nail_jj5h",
+    "o.nnail",
+    "h_nail_shop",
+]
+
 # 사용자 입력
-username = input("인스타그램 아이디를 입력하세요: ")
-password = input("인스타그램 비밀번호를 입력하세요: ")
+username = CONF["crawling"]["INSTA_ID"]
+password = CONF["crawling"]["INSTA_PASS"]
 
 # 인스타그램 로그인 페이지 URL
 login_url = "https://www.instagram.com/accounts/login/"
@@ -42,12 +59,12 @@ else:
 
 
 # 사용자 입력
-username = input("검색할 아이디를 입력하세요 : ")
+username = "somi_art_official"
 baseUrl = "https://www.instagram.com/"
 profile_url = baseUrl + username
 
 # ChromeDriver 경로 설정 (실제 경로로 수정)
-chrome_driver_path = r'C:\Users\COM\Desktop\2024 django project\oz_02_collabo-006-BE\crawling\chromedriver.exe'  # ChromeDriver 경로 설정
+# chrome_driver_path = r"C:\Users\COM\Desktop\2024 django project\oz_02_collabo-006-BE\crawling\chromedriver.exe"  # ChromeDriver 경로 설정
 service = Service(chrome_driver_path)
 
 from selenium.webdriver.chrome.options import Options
@@ -75,7 +92,7 @@ options.add_experimental_option("excludeSwitches", ["enable-automation"])
 options.add_argument("incognito")
 
 # WebDriver 설정 및 페이지 열기
-driver = webdriver.Chrome(service=service,options=options)
+driver = webdriver.Chrome(service=service, options=options)
 driver.get(profile_url)
 
 # 페이지 로드 대기
@@ -94,7 +111,7 @@ while True:
 
 # 페이지 소스 가져오기
 html = driver.page_source
-soup = BeautifulSoup(html, 'html.parser')
+soup = BeautifulSoup(html, "html.parser")
 
 # 이미지 선택자
 insta_images = soup.select("img")
@@ -102,14 +119,14 @@ insta_images = soup.select("img")
 # 이미지 URL 리스트 생성
 image_urls = []
 for img in insta_images:
-    if 'src' in img.attrs:
-        image_urls.append(img['src'])
+    if "src" in img.attrs:
+        image_urls.append(img["src"])
 
 # 드라이버 종료
 driver.quit()
 
 # 이미지 저장 경로 설정
-save_dir = 'images'
+save_dir = "images"
 if not os.path.exists(save_dir):
     os.makedirs(save_dir)
 
@@ -117,9 +134,9 @@ if not os.path.exists(save_dir):
 for i, url in enumerate(image_urls):
     try:
         image_data = urlopen(url).read()
-        file_path = os.path.join(save_dir, f'image_{i+1}.jpg')
-        with open(file_path, 'wb') as f:
+        file_path = os.path.join(save_dir, f"image_{i+1}.jpg")
+        with open(file_path, "wb") as f:
             f.write(image_data)
-        print(f'{file_path} 저장 완료')
+        print(f"{file_path} 저장 완료")
     except Exception as e:
-        print(f'이미지 다운로드 실패: {url}, 에러: {e}')
+        print(f"이미지 다운로드 실패: {url}, 에러: {e}")

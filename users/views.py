@@ -182,41 +182,27 @@ from datetime import timedelta
 #                 status=status.HTTP_400_BAD_REQUEST,
 #             )
 
-from rest_framework_simplejwt.exceptions import TokenError
+# from rest_framework_simplejwt.exceptions import TokenError
 class LogoutAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
+    # 로그아웃을 위해 현재 사용자의 refresh 토큰 무효화
         try:
-            refresh_token = request.data.get("refresh")
-            if not refresh_token:
-                return Response(
-                    {"error": "Refresh token is required."},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
+            refresh_token = request.COOKIES.get('refresh_token')
+            if refresh_token:
+                # refresh 토큰을 사용하여 토큰 무효화
+                refresh_token = RefreshToken(refresh_token)
+                refresh_token.blacklist()
 
-            # Attempt to blacklist the provided refresh token
-            try:
-                token = RefreshToken(refresh_token)
-                token.blacklist()
-            except TokenError as e:
-                return Response(
-                    {"error": "Token is invalid or expired and cannot be blacklisted."},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-
-            return Response({"success": "Logged out"}, status=status.HTTP_205_RESET_CONTENT)
-
+                # 클라이언트에게 쿠키 삭제 요청
+                response = Response({'message': 'Successfully logged out'})
+                response.delete_cookie('access_token')
+                response.delete_cookie('refresh_token')
+                response.data = {"success": True}
+                return response
         except Exception as e:
-            # Generic exception catch: ideally should be more specific.
-            return Response(
-                {
-                    "error": "An error occurred during logout.",
-                    "details": str(e)
-                },
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
-
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class CustomTokenVerifyView(TokenVerifyView):
