@@ -11,7 +11,7 @@ from .serializers import (
     PostCreateSerializer,
     PostLikeSerializer
 )
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 from django.core.paginator import Paginator
@@ -366,6 +366,7 @@ class PostLikeView(APIView):
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
 
+# 이미지 업로드
 def image_upload(request):
     # Base64로 인코딩된 이미지 데이터 리스트 추출
     base64_strings = request.data.get('media')

@@ -68,7 +68,7 @@ class CommentRead(APIView):
     def get(self, request, post_id):
         try:
             post = get_object_or_404(Post, id=post_id)
-            comments = Comment.objects.filter(post=post, parent_comment=None).order_by('created_at')
+            comments = Comment.objects.filter(post=post, parent_comment=None).order_by('-created_at')
             serializer = CommentSerializer(comments, many=True)
 
             return Response({

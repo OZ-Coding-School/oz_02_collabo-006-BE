@@ -76,6 +76,7 @@ CUSTOM_USER_APPS = [
     "hashtags.apps.HashtagsConfig",
     "follow.apps.FollowConfig",
     "archive.apps.ArchiveConfig",
+    "search.apps.SearchConfig",
 ]
 
 CUSTOM_APPS = [

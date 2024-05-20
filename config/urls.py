@@ -17,6 +17,7 @@ urlpatterns = [
     path('api/v1/comment/', include('comments.urls')),
     path('api/v1/', include('follow.urls')),
     path('api/v1/archive/', include('archive.urls')),
+    path('api/v1/search/', include('search.urls')),
 ]
 
 # # swagger
