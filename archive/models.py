@@ -25,5 +25,11 @@ class ArchivePost(CommonModel):
     archive = models.ForeignKey(Archive, on_delete=models.CASCADE, related_name='archive_posts')
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='archive_posts')
 
+class Meta:
+    unique_together = ('archive', 'post')
+    verbose_name = 'Archive Post'
+    verbose_name_plural = 'Archive Posts'
+
     def __str__(self):
         return f"Archive: {self.archive.archive_name}, Post: {self.post.id}"
+

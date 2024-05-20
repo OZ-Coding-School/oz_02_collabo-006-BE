@@ -76,7 +76,6 @@ class ArchiveDetailAPIView(APIView):
         return Response(serializer.data)
     
     
-
 class ArchivePostCreateAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -85,10 +84,13 @@ class ArchivePostCreateAPIView(APIView):
         post_id = request.data.get('post_id')
         post = get_object_or_404(Post, id=post_id)
 
+        # Check if the ArchivePost already exists
+        if ArchivePost.objects.filter(archive=archive, post=post).exists():
+            return Response({'status': 'post already in archive'}, status=drf_status.HTTP_400_BAD_REQUEST)
+
         ArchivePost.objects.create(archive=archive, post=post)
 
         return Response({'status': 'post added'}, status=drf_status.HTTP_200_OK)
-
 
 class ArchivePostDeleteAPIView(APIView):
     permission_classes = [IsAuthenticated]
