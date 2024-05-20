@@ -58,8 +58,17 @@ else:
     print("로그인에 성공했습니다.")
 
 
-# 사용자 입력
-username = "somi_art_official"
+# 사용자 입력#input
+
+# for insta_id in instaIdList:
+#     크롤링함수(insta_id)
+
+# def 크롤링함수(insta_id):
+#     winsta+
+#     woiejfeij
+#     retrun 이미지,
+
+username = "somi_art_official" 
 baseUrl = "https://www.instagram.com/"
 profile_url = baseUrl + username
 

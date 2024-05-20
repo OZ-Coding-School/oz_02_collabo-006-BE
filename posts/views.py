@@ -105,10 +105,8 @@ class PostUser(APIView):
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 # 게시글 생성
-from rest_framework_simplejwt.authentication import JWTAuthentication
 
 class PostCreate(APIView):
-    authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
