@@ -1,10 +1,4 @@
-# from tokenize import TokenError
-# from django.shortcuts import render
-# from jwt import InvalidTokenError
-# from django.db.utils import IntegrityError
-# from rest_framework_simplejwt.views import TokenObtainPairView
-# from rest_framework.exceptions import ParseError
-# from users.serializers import UserLoginSerializer
+from django.urls import reverse
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from users.serializers import UserSerializer, UserUpdateSerializer, UserDetailSerializer
@@ -15,21 +9,86 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from django.utils.translation import gettext_lazy as _
 from django.shortcuts import get_object_or_404
-from rest_framework_simplejwt.tokens import AccessToken
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.views import TokenVerifyView
+from django.contrib.auth.tokens import PasswordResetTokenGenerator
+from six import text_type
+from django.core.mail import send_mail
+from django.template.loader import render_to_string
+from django.utils.http import urlsafe_base64_encode
+from django.utils.encoding import force_bytes
+from django.conf import settings
+from django.utils.encoding import force_str
+from django.utils.http import urlsafe_base64_decode
+from django.http import HttpResponse
+import hmac, hashlib, base64, time, requests
 
-class UserView(APIView):
-    def get(self, request):
-        users = User.objects.all()
+def make_signature(method, uri, access_key, secret_key):
+    timestamp = str(int(time.time() * 1000))
+    message = method + " " + uri + "\n" + timestamp + "\n" + access_key
+    signing_key = bytes(secret_key, 'utf-8')
+    message = bytes(message, 'utf-8')
+    
+    signature = base64.b64encode(hmac.new(signing_key, message, digestmod=hashlib.sha256).digest())
+    return signature, timestamp
 
-        serializer = UserSerializer(users, many=True)
-        return Response(serializer.data)
 
+def send_verification_email(user, verification_link):
+    endpoint = settings.CLOUD_OUTBOUND_MAILER_ENDPOINT
+    access_key = settings.CLOUD_OUTBOUND_MAILER_ACCESS_KEY
+    secret_key = settings.CLOUD_OUTBOUND_MAILER_SECRET_KEY
+
+    method = 'POST'
+    uri = '/api/v1/mails'
+    
+    signature, timestamp = make_signature(method, uri, access_key, secret_key)
+    
+    headers = {
+        'Content-Type': 'application/json',
+        'x-ncp-apigw-timestamp': timestamp,
+        'x-ncp-iam-access-key': access_key,
+        'x-ncp-apigw-signature-v2': signature.decode('utf-8'),
+    }
+
+    payload = {
+        "senderAddress": "no_reply@naildp.com",
+        "title": "Verify your email address",
+        "body": f"{user.username}님 안녕하세요,\n\n이메일 인증하시려면 다음 링크를 클릭해주세요:\n\n\n\n{verification_link}\n\n\n\n감사합니다.!",
+        "recipients": [{"address": user.email, "name": user.username, "type": "R"}],
+        "individual": True,
+        "advertising": False
+    }
+    
+    response = requests.post(endpoint, headers=headers, json=payload)
+    response.raise_for_status()
+    return response.json()
+
+
+class EmailVerificationTokenGenerator(PasswordResetTokenGenerator):
+    def _make_hash_value(self, user, timestamp):
+        return text_type(user.pk) + text_type(timestamp) + text_type(user.email_verified)
+
+account_activation_token = EmailVerificationTokenGenerator()
+
+
+def verify_email(request, uidb64, token):
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = get_object_or_404(User, pk=uid)
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+        user = None
+
+    if user is not None and account_activation_token.check_token(user, token):
+        user.email_verified = True
+        user.save()
+        return HttpResponse('Email verification successful')
+    else:
+        return HttpResponse('Email verification failed')
 
 class Users(APIView):
     def post(self, request, *args, **kwargs):
+        account_activation_token = EmailVerificationTokenGenerator()
         serializer = UserSerializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
             try:
@@ -39,6 +98,16 @@ class Users(APIView):
                 user = serializer.save()
                 user.set_password(serializer.validated_data.get("password"))
                 user.save()
+
+                # Generate verification link
+                token = account_activation_token.make_token(user)
+                uid = urlsafe_base64_encode(force_bytes(user.pk))
+                verification_link = request.build_absolute_uri(
+                    reverse('email_verification', kwargs={'uidb64': uid, 'token': token})
+                )
+
+                # Send verification email
+                send_verification_email(user, verification_link)
 
                 return Response(
                     {"success": True, "code": 201, "message": "회원가입 성공"},
@@ -76,6 +145,14 @@ class Users(APIView):
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
+
+
+class UserView(APIView):
+    def get(self, request):
+        users = User.objects.all()
+
+        serializer = UserSerializer(users, many=True)
+        return Response(serializer.data)
 
 
 class UserUpdateAPIView(APIView):
@@ -184,7 +261,7 @@ from datetime import timedelta
 
 # from rest_framework_simplejwt.exceptions import TokenError
 class LogoutAPIView(APIView):
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
 
     def post(self, request):
     # 로그아웃을 위해 현재 사용자의 refresh 토큰 무효화
