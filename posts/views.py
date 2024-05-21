@@ -40,11 +40,11 @@ class PostList(APIView):
             # 만약 'sort'가 'new'일 경우
             if sort == 'new':
                 # visible(게시글 공개 여부)이 True인 post를 최신순으로 24개씩 가져오기
-                posts = Post.objects.filter(visible=True).order_by('-created_at')[:24]
+                posts = Post.objects.filter(visible=True).order_by('-created_at')
             # 만약 'sort'가 'trending'일 경우
             elif sort == 'trending':
                 # visible(게시글 공개 여부)이 True인 post를 좋아요순으로 24개씩 가져오기
-                posts = Post.objects.filter(visible=True).order_by('-likes')[:24]
+                posts = Post.objects.filter(visible=True).order_by('-likes')
             else:
                 return Response({
                     "error": {
@@ -368,6 +368,7 @@ class PostLikeView(APIView):
 def image_upload(request):
     # Base64로 인코딩된 이미지 데이터 리스트 추출
     base64_strings = request.data.get('media')
+
     if not base64_strings:
         return Response({"error": "No images provided"}, status=400)
     
@@ -387,10 +388,13 @@ def image_upload(request):
     # 업로드된 파일 정보 저장
     uploaded_files = []
 
+
     for base64_string in base64_strings:
+        base64_string = str(base64_string)
+
+        
         format, imgstr = base64_string.split(';base64,')
         ext = format.split('/')[-1]
-
         # Base64 문자열을 바이너리 이미지로 디코딩
         data = ContentFile(base64.b64decode(imgstr), name=f"temp.{ext}")
 
@@ -455,3 +459,4 @@ def image_delete_single(file_url):
     s3.delete_object(Bucket=bucket_name, Key=delete_object)
 
     return
+

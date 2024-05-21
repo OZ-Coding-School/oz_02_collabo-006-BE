@@ -17,7 +17,7 @@ import requests
 
 
 def login():
-    url = "http://127.0.0.1:8000/api/v1/user/login/"
+    url = "http://naildp.com:8000/api/v1/user/login/"
 
     # 헤더
     headers = {
@@ -26,8 +26,8 @@ def login():
 
     # 요청 데이터 (JSON 형식)
     data = {
-        "username": "test1",
-        "password": "1Rlaqjawns@"
+        "username": "somi_art_official",
+        "password": "1Qsomi_art_official@"
     }
 
     # POST 요청 보내기
@@ -58,14 +58,6 @@ def download_image_as_base64(url):
         print(f"이미지 다운로드 및 변환 실패: {e}")
         return None
     
-
-# a_url = download_image_as_base64("https://scontent.cdninstagram.com/v/t51.29350-15/274896670_1540541332985197_928324777387463046_n.jpg?stp=dst-jpg_e35&efg=eyJ2ZW5jb2RlX3RhZyI6ImltYWdlX3VybGdlbi4xNDQweDE0NDAuc2RyLmYyOTM1MCJ9&_nc_ht=scontent.cdninstagram.com&_nc_cat=101&_nc_ohc=AwSgh-DNrqkQ7kNvgGlCJHH&edm=APs17CUBAAAA&ccb=7-5&ig_cache_key=Mjc4NDIwODU4OTc3Njg4NDExOA%3D%3D.2-ccb7-5&oh=00_AYCbKYXCjNYXhR28rWe6BGiAHiOWShLl03Dypv-DUchL6g&oe=665255CB&_nc_sid=10d13b")
-# file_path = os.path.join( f"1.txt")
-# with open(file_path, 'w', encoding='utf-8') as f:
-#     f.write(a_url)
-#     print(f"{file_path} 저장 완료")
-# exit()
-
 
 ssl._create_default_https_context = ssl._create_unverified_context
 
@@ -177,34 +169,9 @@ def save_images(image_urls, insta_id):
         if not url:
             continue
 
-        # # 파일을 추가 모드로 열기
-        # with open('1.txt', 'a', encoding='utf-8') as file:
-        #     file.write(name)
-        #     file.write("!!name!!")
-        #     file.write(url)
-        #     file.write("!!url!!")
-        #     file.write("\n")  # 줄바꿈 추가
-        #     file.write("\n")  # 줄바꿈 추가
-        #     file.write("\n")  # 줄바꿈 추가
-        # print(f"텍스트 추가 완료")
-
-        # with open('2name.txt', 'a', encoding='utf-8') as file:
-        #     file.write(name)
-        #     file.write("\n")  # 줄바꿈 추가
-        #     file.write("!!name!!")
-        #     file.write("\n")  # 줄바꿈 추가
-        #     file.write("\n")  # 줄바꿈 추가
-
-        # with open('3url.txt', 'a', encoding='utf-8') as file:
-        #     file.write(url)
-        #     file.write("\n")  # 줄바꿈 추가
-        #     file.write("!!url!!")
-        #     file.write("\n")  # 줄바꿈 추가
-        #     file.write("\n")  # 줄바꿈 추가
-
         try:
             # API 엔드포인트 URL
-            post_url_index = "http://127.0.0.1:8000/api/v1/post/create/"
+            post_url_index = "http://naildp.com:8000/api/v1/post/create/"
 
             # 헤더
             headers = {
@@ -230,13 +197,6 @@ def save_images(image_urls, insta_id):
                 print("요청 실패:", response.status_code, response.text)
 
 
-
-            # image_data = urlopen(url).read()
-            # # file_path = os.path.join(save_dir, f"{insta_id}_image_{i+1}.jpg")
-            # file_path = os.path.join(save_dir, f"{name}.jpg")
-            # with open(file_path, "wb") as f:
-            #     f.write(image_data)
-            # print(f"{file_path} 저장 완료")
         except Exception as e:
             print(f"{insta_id} 계정 이미지 다운로드 실패: {url}, 에러: {e}")
 
@@ -252,29 +212,3 @@ if login_insta(username, password):
 driver.quit()
 
 
-
-
-
-# # API 엔드포인트 URL
-# url = "http://127.0.0.1:8000/api/v1/login/"
-
-# # 헤더
-# headers = {
-#     "Content-Type": "application/json",
-#     "Authorization": "Bearer your_access_token"
-# }
-
-# # 요청 데이터 (JSON 형식)
-# data = {
-#     "key1": "value1",
-#     "key2": "value2"
-# }
-
-# # POST 요청 보내기
-# response = requests.post(url, headers=headers, json=data)
-
-# # 응답 확인
-# if response.status_code == 200:
-#     print("요청 성공:", response.json())
-# else:
-#     print("요청 실패:", response.status_code, response.text)
