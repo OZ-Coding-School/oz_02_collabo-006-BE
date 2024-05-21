@@ -10,10 +10,11 @@ from users.models import User
 class FollowCheckout(APIView):
     permission_classes = [IsAuthenticated]
 
-    def get(self, request):
+    def get(self, request, user_id):
         try:
             user = request.user
-            target_user_id = request.data.get('user_id')
+            # target_user_id = request.data.get('user_id')
+            target_user_id = user_id
 
             if not target_user_id:
                 return Response({'error': 'user_id query parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
