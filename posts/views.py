@@ -35,16 +35,16 @@ class PostList(APIView):
             sort = request.GET.get('sort','new')
             # 디폴트 페이지값 : '1' -> 정수형으로 변환
             page = int(request.GET.get('page', '1'))
-            page_size = 12  # 페이지당 게시글 수
+            page_size = 18  # 페이지당 게시글 수
 
             # 만약 'sort'가 'new'일 경우
             if sort == 'new':
                 # visible(게시글 공개 여부)이 True인 post를 최신순으로 24개씩 가져오기
-                posts = Post.objects.filter(visible=True).order_by('-created_at')[:24]
+                posts = Post.objects.filter(visible=True).order_by('-created_at')
             # 만약 'sort'가 'trending'일 경우
             elif sort == 'trending':
                 # visible(게시글 공개 여부)이 True인 post를 좋아요순으로 24개씩 가져오기
-                posts = Post.objects.filter(visible=True).order_by('-likes')[:24]
+                posts = Post.objects.filter(visible=True).order_by('-likes')
             else:
                 return Response({
                     "error": {
