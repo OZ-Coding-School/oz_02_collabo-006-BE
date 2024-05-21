@@ -413,7 +413,6 @@ def image_upload(request):
     print(uploaded_files)
     return uploaded_files
 
-
 # 게시글 삭제 시, 게시글 내 전체 이미지 삭제
 def image_delete(post_id):
     # S3 Configuration

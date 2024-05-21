@@ -18,7 +18,12 @@ drf-yasg = "^1.21.7"
 boto3 = "^1.34.102"
 mysqlclient = "^2.2.4"
 selenium = "^4.21.0"
+beautifulsoup4 = "^4.12.3"
+webdriver-manager = "^4.0.1"
 
+
+[tool.poetry.group.dev.dependencies]
+chromedriver-autoinstaller = "^0.6.4"
 
 [build-system]
 requires = ["poetry-core"]
