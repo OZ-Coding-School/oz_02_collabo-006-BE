@@ -201,6 +201,8 @@ class PostDetail(APIView):
 
 # 게시글 수정
 class PostUpdate(APIView):
+    permission_classes = [IsAuthenticated]
+    
     def post(self, request, post_id):
         try:
             post_obj = Post.objects.get(pk=post_id)
