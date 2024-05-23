@@ -28,30 +28,69 @@ class UserSerializer(ModelSerializer):
             raise serializers.ValidationError("유효하지 않은 추천인입니다.")
         return value
 
-    # def validate(self, data):
-    #     # Additional custom validation can be added here if needed
-    #     return data
 
 
 
+class UserDetailSerializer(ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["id","username","phone","referrer","email","profile_image","subscription","status","created_at","updated_at"]
+        # If you need to make email and profile_image optional:
+        extra_kwargs = {
+            'email': {'required': False, 'allow_blank': True},
+            'profile_image': {'required': False, 'allow_null': True}
+        }
+
+    def to_representation(self, instance):
+        """ Modify the output format, if necessary, to display specific formats of fields """
+        ret = super().to_representation(instance)
+        # Here you can further customize the output if needed, such as formatting dates
+        return ret
 
 
 class UserUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['username', 'phone', 'email', 'subscription', 'status', 'profile_image']
+        fields = ["id","username","phone","referrer","email","profile_image","subscription","status","created_at","updated_at"]
+        extra_kwargs = {
+            'password': {'write_only': True}
+        }
 
     def update(self, instance, validated_data):
+        print(instance)
         instance.username = validated_data.get('username', instance.username)
         instance.phone = validated_data.get('phone', instance.phone)
         instance.email = validated_data.get('email', instance.email)
         instance.subscription = validated_data.get('subscription', instance.subscription)
         instance.status = validated_data.get('status', instance.status)
         instance.profile_image = validated_data.get('profile_image', instance.profile_image)
+        
         if 'password' in validated_data:
-            instance.set_password(validated_data['password'])
+            password = validated_data.get('password', instance.password)
+            instance.set_password(password)
+
         instance.save()
         return instance
+
+
+
+
+# class UserUpdateSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = User
+#         fields = ['username', 'phone', 'email', 'subscription', 'status', 'profile_image']
+
+#     def update(self, instance, validated_data):
+#         instance.username = validated_data.get('username', instance.username)
+#         instance.phone = validated_data.get('phone', instance.phone)
+#         instance.email = validated_data.get('email', instance.email)
+#         instance.subscription = validated_data.get('subscription', instance.subscription)
+#         instance.status = validated_data.get('status', instance.status)
+#         instance.profile_image = validated_data.get('profile_image', instance.profile_image)
+#         if 'password' in validated_data:
+#             instance.set_password(validated_data['password'])
+#         instance.save()
+#         return instance
 
 
 class UserLoginSerializer(serializers.Serializer):

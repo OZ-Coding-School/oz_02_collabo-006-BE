@@ -1,0 +1,65 @@
+#!/usr/bin/env bash
+echo "./up help"
+
+# ./up
+if [ -z "$1" ]; then
+    # 변경 사항이 있는지 확인하고 커밋 메시지를 받음
+echo -e "Feat : 새로운 기능 구현
+Add : 에셋 파일 추가
+Fix : 버그 수정
+Docs : 문서 추가 및 수정
+Style : 스타일링 작업
+Refactor : 코드 리팩토링 (동작 변경 없음)
+Test : 테스트
+Deploy : 배포
+Conf : 빌드, 환경 설정
+Chore : 기타 작업
+커밋 메시지를 입력하세요:"
+
+    # 변경된 파일들을 스테이징 영역에 추가
+    git add .
+    read index
+
+    # `git status` 명령어의 결과를 변수에 저장
+    status=$(git status)
+
+    # "working tree clean"이 포함되어 있으면 변경 사항이 없는 것으로 판단
+    if [[ $status == *"working tree clean"* ]]; then
+        echo "변경 사항이 없어 커밋할 내용이 없습니다."
+    else
+        # 변경 사항이 있으면 커밋을 수행
+        if [ -z "$index" ]; then
+            echo "커밋 메시지가 입력되지 않았습니다."
+        else
+            git commit -m "$index"
+            git push
+        fi
+    fi
+# ./up pull
+elif [ "$1" = "pull" ]; then
+    git pull origin Feature-docker
+# ./up log [1 or 2 or 3]
+elif [ "$1" = "log" ]; then
+    # 1 일경우 ps01 로그보기, 2 일경우 dg01, 3 일경우 ng01
+    if [[ "$1" = "log" && "$2" = 1 ]]; then
+        sudo docker logs ps01
+    elif [[ "$1" = "log" && "$2" = 2 ]]; then
+        sudo docker logs dg01
+    elif [[ "$1" = "log" && "$2" = 3 ]]; then
+        sudo docker logs ng01
+    fi
+# ./up docker
+elif [ "$1" = "docker" ]; then
+    sudo docker-compose -f docker-compose.yml up --build -d
+elif [ "$1" = "help" ]; then
+    echo "'./up'                    | 푸쉬"
+    echo "'./up pull'               | git pull origin Feature-docker"
+    echo "'./up log [1 or 2 or 3]'  | 1 일경우 ps01 로그보기, 2 일경우 dg01, 3 일경우 ng01"
+    echo "'./up docker'             | sudo docker-compose -f docker-compose.yml up --build -d"
+    echo -e "\n------------memo------------\n"
+    echo "docker ps -a                                  | 독커에서 실행중인 프로세서 보기 "
+    echo "sudo ls -la /var/lib/docker                   | 도커 디렉토리 "
+    echo "telnet                                        | 포트 조회 "
+    echo "sudo docker exec -it [프로세서명] /bin/bash    | 프로세서 터미널 실행하기 "
+    echo "sudo docker image ls -a                         | 생성된 이미지 목록보기 "
+fi
